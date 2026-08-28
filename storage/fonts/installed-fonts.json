@@ -1,0 +1,8 @@
+{
+    "sarabun": {
+        "normal": "C:\\xampp\\htdocs\\Laravel Stock Management System\\storage\\fonts\/sarabun_normal_90f01060cec11da27b250ee0d7c4bffe",
+        "bold": "C:\\xampp\\htdocs\\Laravel Stock Management System\\storage\\fonts\/sarabun_bold_41442a3f4119695d2aaa8fa8a5dbd37d",
+        "italic": "C:\\xampp\\htdocs\\Laravel Stock Management System\\storage\\fonts\/sarabun_italic_21ed77ca45fbf2badd7cc5786bdf0846",
+        "bold_italic": "sarabun_bold_italic_8792de8a3d6195030543ee6a02fa1939"
+    }
+}

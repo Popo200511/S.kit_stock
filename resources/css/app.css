@@ -1,0 +1,303 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---- Design tokens ported from Feed Stock Manager v2.dc.html (:root, lines 17-137) ---- */
+:root {
+    --accent: #0b7a55;
+    --accent-ink: #08603f;
+    --accent-hover: #096a49;
+    --accent-tint: #e9f4ef;
+    --accent-tint2: #dcefe4;
+    --accent-tint3: #cfe8db;
+    --accent-border: #cde2d8;
+    --accent-border2: #c9d3cd;
+    --accent-border3: #b9cfc4;
+    --accent-soft: #f7fbf9;
+    --accent-select: #d3ece0;
+    --danger: #b3271b;
+    --danger-ink: #a1231a;
+    --danger-ink2: #991f15;
+    --danger-tint: #fbeceb;
+    --danger-tint2: #fdf1f0;
+    --danger-tint3: #fadedb;
+    --danger-tint4: #f6cfcb;
+    --danger-border: #e8d4d2;
+    --warn: #a4620a;
+    --warn-ink: #7a4906;
+    --warn-ink2: #8b6733;
+    --warn-tint: #fdf3e4;
+    --warn-bg: #fff9ee;
+    --warn-border: #f3ddb6;
+    --caution: #6f6320;
+    --caution-tint: #f7f5e6;
+    --text: #101418;
+    --text2: #2c333b;
+    --text3: #3b444e;
+    --text4: #4c545d;
+    --muted: #6b7480;
+    --muted2: #8f98a3;
+    --muted3: #a4acb6;
+    --faint: #bfc5cc;
+    --faint2: #c3c9d0;
+    --faint3: #cfd4d9;
+    --faint4: #d6dade;
+    --surface: #ffffff;
+    --bg: #fbfbfc;
+    --surface2: #fafbfc;
+    --surface3: #fcfcfd;
+    --surface4: #f7f8f9;
+    --sunken: #f4f6f7;
+    --sunken2: #f3f4f6;
+    --sunken3: #f0f2f4;
+    --chip: #eef0f3;
+    --chip2: #eef1f4;
+    --chip3: #eceef1;
+    --hairline: #f2f4f6;
+    --hairline2: #f4f5f7;
+    --line: #eff1f3;
+    --border: #e8eaee;
+    --border2: #e3e6ea;
+    --border3: #e0e3e7;
+    --border4: #dcdfe4;
+    --border5: #e6e9ec;
+    --border6: #dfe2e6;
+    --bar-neutral: #ccd3da;
+}
+
+[data-theme='dark'] {
+    --accent: #3fb98a;
+    --accent-ink: #7fd6b1;
+    --accent-hover: #4ec99a;
+    --accent-tint: #14332a;
+    --accent-tint2: #1a4034;
+    --accent-tint3: #215040;
+    --accent-border: #2c5a49;
+    --accent-border2: #31604e;
+    --accent-border3: #376b57;
+    --accent-soft: #132521;
+    --accent-select: #22503f;
+    --danger: #f2695c;
+    --danger-ink: #f5877c;
+    --danger-ink2: #f79c92;
+    --danger-tint: #3a1b18;
+    --danger-tint2: #3f201c;
+    --danger-tint3: #4a221e;
+    --danger-tint4: #572924;
+    --danger-border: #5c2f2a;
+    --warn: #e0a24a;
+    --warn-ink: #f0c384;
+    --warn-ink2: #c9a271;
+    --warn-tint: #3a2c15;
+    --warn-bg: #2e2413;
+    --warn-border: #5a4526;
+    --caution: #cbbd6b;
+    --caution-tint: #332f1a;
+    --text: #e9edf1;
+    --text2: #d3d9df;
+    --text3: #c2c9d1;
+    --text4: #aeb6bf;
+    --muted: #98a2ad;
+    --muted2: #8b95a0;
+    --muted3: #78828d;
+    --faint: #5d666f;
+    --faint2: #525b64;
+    --faint3: #4a535b;
+    --faint4: #414a52;
+    --surface: #161b1f;
+    --bg: #0f1316;
+    --surface2: #1a2025;
+    --surface3: #1b2126;
+    --surface4: #1f262b;
+    --sunken: #1e252a;
+    --sunken2: #222930;
+    --sunken3: #242b31;
+    --chip: #222a30;
+    --chip2: #242c33;
+    --chip3: #283138;
+    --hairline: #242c32;
+    --hairline2: #222a30;
+    --line: #232b31;
+    --border: #2a333a;
+    --border2: #2e373f;
+    --border3: #333d45;
+    --border4: #36404a;
+    --border5: #303941;
+    --border6: #2c353c;
+    --bar-neutral: #3f4a54;
+}
+
+/* ---- Login page uses its own fixed pink theme regardless of dark mode (prototype lines 242-346) ---- */
+:root {
+    --login-accent: #d9566d;
+    --login-accent-hover: #c34459;
+    --login-accent-tint: #fdeef1;
+}
+
+@theme {
+    --font-sans: 'IBM Plex Sans Thai', 'IBM Plex Sans', system-ui, sans-serif;
+
+    --color-accent: var(--accent);
+    --color-accent-ink: var(--accent-ink);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-tint: var(--accent-tint);
+    --color-accent-tint2: var(--accent-tint2);
+    --color-accent-tint3: var(--accent-tint3);
+    --color-accent-border: var(--accent-border);
+    --color-accent-border2: var(--accent-border2);
+    --color-accent-border3: var(--accent-border3);
+    --color-accent-soft: var(--accent-soft);
+    --color-accent-select: var(--accent-select);
+
+    --color-danger: var(--danger);
+    --color-danger-ink: var(--danger-ink);
+    --color-danger-ink2: var(--danger-ink2);
+    --color-danger-tint: var(--danger-tint);
+    --color-danger-tint2: var(--danger-tint2);
+    --color-danger-tint3: var(--danger-tint3);
+    --color-danger-tint4: var(--danger-tint4);
+    --color-danger-border: var(--danger-border);
+
+    --color-warn: var(--warn);
+    --color-warn-ink: var(--warn-ink);
+    --color-warn-ink2: var(--warn-ink2);
+    --color-warn-tint: var(--warn-tint);
+    --color-warn-bg: var(--warn-bg);
+    --color-warn-border: var(--warn-border);
+
+    --color-caution: var(--caution);
+    --color-caution-tint: var(--caution-tint);
+
+    --color-text: var(--text);
+    --color-text2: var(--text2);
+    --color-text3: var(--text3);
+    --color-text4: var(--text4);
+    --color-muted: var(--muted);
+    --color-muted2: var(--muted2);
+    --color-muted3: var(--muted3);
+    --color-faint: var(--faint);
+    --color-faint2: var(--faint2);
+    --color-faint3: var(--faint3);
+    --color-faint4: var(--faint4);
+
+    --color-surface: var(--surface);
+    --color-bg: var(--bg);
+    --color-surface2: var(--surface2);
+    --color-surface3: var(--surface3);
+    --color-surface4: var(--surface4);
+    --color-sunken: var(--sunken);
+    --color-sunken2: var(--sunken2);
+    --color-sunken3: var(--sunken3);
+    --color-chip: var(--chip);
+    --color-chip2: var(--chip2);
+    --color-chip3: var(--chip3);
+    --color-hairline: var(--hairline);
+    --color-hairline2: var(--hairline2);
+    --color-line: var(--line);
+    --color-border: var(--border);
+    --color-border2: var(--border2);
+    --color-border3: var(--border3);
+    --color-border4: var(--border4);
+    --color-border5: var(--border5);
+    --color-border6: var(--border6);
+    --color-bar-neutral: var(--bar-neutral);
+
+    --color-login-accent: var(--login-accent);
+    --color-login-accent-hover: var(--login-accent-hover);
+    --color-login-accent-tint: var(--login-accent-tint);
+}
+
+html,
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+    background: var(--accent-select);
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+button:not(:disabled),
+[role="button"],
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+select:not(:disabled),
+label:has(> input[type="checkbox"]),
+label:has(> input[type="radio"]) {
+    cursor: pointer;
+}
+
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.6);
+}
+
+/* ---- Print / receipt sheet base (ported from #doc-sheet, prototype lines 139-201) ---- */
+#doc-sheet {
+    background: #ffffff;
+    color: #101418;
+    --accent: #0b7a55;
+    --accent-tint: #e9f4ef;
+    --border: #e8eaee;
+    --line: #eff1f3;
+    --muted: #6b7480;
+    --muted2: #8f98a3;
+}
+
+@media print {
+    /* A zero page margin also tends to make Chrome drop its own date/URL/page-number
+       header and footer, since it no longer has margin space to print them into. */
+    @page {
+        margin: 0;
+    }
+    /* #doc-sheet is moved to be a direct child of <body> (see printDocSheet() in
+       movements/index.blade.php) right before printing, so this rule is all that's
+       needed to isolate it — no visibility/position tricks, no risk of inheriting
+       height from the sidebar/table underneath or repeating across pages. */
+    body > *:not(#doc-sheet) {
+        display: none !important;
+    }
+    #doc-sheet {
+        margin: 0 auto;
+        box-shadow: none;
+        max-width: none;
+        border-radius: 0;
+    }
+    [data-no-print] {
+        display: none !important;
+    }
+}
+
+/* ---- Page navigation loader ---- */
+.page-loader {
+    width: 46px;
+    padding: 7px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--accent);
+    --_m:
+        conic-gradient(#0000 10%, #000),
+        linear-gradient(#000 0 0) content-box;
+    -webkit-mask: var(--_m);
+    mask: var(--_m);
+    -webkit-mask-composite: source-out;
+    mask-composite: subtract;
+    animation: page-loader-spin 1s infinite linear;
+}
+@keyframes page-loader-spin {
+    to { transform: rotate(1turn); }
+}
