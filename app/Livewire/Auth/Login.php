@@ -22,13 +22,6 @@ class Login extends Component
 
     public ?string $error = null;
 
-    public function fillDemo(string $email): void
-    {
-        $this->email = $email;
-        $this->password = 'password';
-        $this->error = null;
-    }
-
     public function submit()
     {
         $email = trim($this->email);

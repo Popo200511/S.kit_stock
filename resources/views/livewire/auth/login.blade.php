@@ -81,17 +81,5 @@
                 <span class="text-[11.5px] text-[#b3bac5]">เวอร์ชัน 1.0.0</span>
             </div>
         </div>
-
-        @if (app()->environment('local'))
-            <div class="w-full max-w-[428px] flex flex-wrap items-center justify-center gap-1.5">
-                <span class="text-[11px] text-[#a99097] w-full text-center">บัญชีสาธิต — กดเพื่อกรอกอัตโนมัติ (แสดงเฉพาะ local)</span>
-                @foreach (\App\Models\User::orderBy('id')->get() as $demo)
-                    <button type="button" wire:click="fillDemo('{{ $demo->email }}')"
-                        class="px-3 py-1.5 rounded-lg border border-[#e2e6ee] bg-white text-[11.5px] text-[#5b6472] hover:border-login-accent hover:text-login-accent">
-                        {{ $demo->role->label() }}
-                    </button>
-                @endforeach
-            </div>
-        @endif
     </div>
 </div>
