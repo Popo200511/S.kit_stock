@@ -43,12 +43,6 @@ class UserSeeder extends Seeder
                 'role' => UserRole::SalesStaff,
                 'permissions' => [Permission::StockMovements],
             ],
-            [
-                'name' => 'ผู้ทดสอบระบบ (QA)',
-                'email' => 'tester@rungrueang.co.th',
-                'role' => UserRole::Tester,
-                'permissions' => [Permission::ViewReports, Permission::StockMovements, Permission::EditProducts, Permission::StockCount, Permission::OnlineSales],
-            ],
         ];
 
         foreach ($rows as $row) {
