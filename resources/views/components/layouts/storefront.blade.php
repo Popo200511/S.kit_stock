@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? config('shop.name') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <meta name="description" content="{{ $description ?? 'ดูรายการสินค้าของร้าน '.config('shop.name').' แล้วทักไลน์หรือโทรสั่งซื้อได้ทันที' }}">
     {{-- ตัวเดียวกันไม่ว่าจะมี query string ตัวกรอง/เรียง/ค้นหาติดมาแบบไหนก็ตาม กัน Google
     มองว่าเป็นหน้าซ้ำกันหลายเวอร์ชัน --}}
