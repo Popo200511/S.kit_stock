@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\StockCount;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class StockCountSeeder extends Seeder
 {
@@ -61,6 +62,28 @@ class StockCountSeeder extends Seeder
                     'real_qty' => $real,
                 ]);
             }
+        }
+
+        // count_no ข้างบนถูกใส่ตรงๆ ไม่ผ่าน StockService::nextCountNo() ซึ่งออกเลขจากตาราง
+        // doc_sequences — ถ้าไม่ sync ตัวนับให้ทันเลขที่สูงสุดของแต่ละปี พอมีคนสร้างรอบนับ
+        // สต๊อกใหม่ผ่านหน้าเว็บครั้งแรก จะได้เลขซ้ำกับที่ seed ไว้แล้วทันที
+        $maxByYear = [];
+        foreach ($sessions as $session) {
+            if (preg_match('/^CC-(\d+)-(\d+)$/', $session['count_no'], $m) === 1) {
+                $year = $m[1];
+                $number = (int) $m[2];
+                $maxByYear[$year] = max($maxByYear[$year] ?? 0, $number);
+            }
+        }
+
+        foreach ($maxByYear as $year => $max) {
+            $key = "stock_count_{$year}";
+            $current = DB::table('doc_sequences')->where('key', $key)->value('last_number') ?? 0;
+
+            DB::table('doc_sequences')->updateOrInsert(
+                ['key' => $key],
+                ['last_number' => max($current, $max), 'updated_at' => now()]
+            );
         }
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class StockMovementSeeder extends Seeder
 {
@@ -96,5 +97,29 @@ class StockMovementSeeder extends Seeder
 
             $movement->update(['total' => $total]);
         }
+
+        // เอกสารข้างบนถูกใส่ doc_no ตรงๆ ไม่ผ่าน StockService::nextDocNo() ซึ่งออกเลขจาก
+        // ตาราง doc_sequences — ถ้าไม่ sync ตัวนับให้ทันเลขที่สูงสุดตรงนี้ พอมีคนสร้างเอกสาร
+        // ใหม่ผ่านหน้าเว็บครั้งแรก จะได้เลขซ้ำ (เช่น IN-0001) ที่ seed ไว้แล้วทันที
+        $this->bumpSequence('movement_in', $this->maxDocNumber($docs, 'in'));
+        $this->bumpSequence('movement_out', $this->maxDocNumber($docs, 'out'));
+    }
+
+    private function maxDocNumber(array $docs, string $type): int
+    {
+        return collect($docs)
+            ->where('type', $type)
+            ->map(fn ($doc) => (int) preg_replace('/\D/', '', $doc['doc_no']))
+            ->max() ?? 0;
+    }
+
+    private function bumpSequence(string $key, int $atLeast): void
+    {
+        $current = DB::table('doc_sequences')->where('key', $key)->value('last_number') ?? 0;
+
+        DB::table('doc_sequences')->updateOrInsert(
+            ['key' => $key],
+            ['last_number' => max($current, $atLeast), 'updated_at' => now()]
+        );
     }
 }
