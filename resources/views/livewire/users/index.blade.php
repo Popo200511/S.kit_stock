@@ -118,12 +118,12 @@
 
                 <div class="flex flex-col gap-1.5">
                     <label class="text-[12.5px] font-medium text-text2">ชื่อ-นามสกุล</label>
-                    <input type="text" wire:model="form.name" placeholder="เช่น ปรียา ศรีทอง" class="border border-border3 rounded-[10px] px-3 py-2.5 text-[13.5px] focus:border-accent focus:ring-0 focus:outline-none">
+                    <input type="text" wire:model="form.name" placeholder="เช่น สุหรรษา พลยศ" class="border border-border3 rounded-[10px] px-3 py-2.5 text-[13.5px] focus:border-accent focus:ring-0 focus:outline-none">
                 </div>
 
                 <div class="flex flex-col gap-1.5">
                     <label class="text-[12.5px] font-medium text-text2">อีเมล</label>
-                    <input type="email" wire:model="form.email" placeholder="name@rungrueang.co.th" class="border border-border3 rounded-[10px] px-3 py-2.5 text-[13.5px] focus:border-accent focus:ring-0 focus:outline-none">
+                    <input type="email" wire:model="form.email" placeholder="name@gmail.com" class="border border-border3 rounded-[10px] px-3 py-2.5 text-[13.5px] focus:border-accent focus:ring-0 focus:outline-none">
                 </div>
 
                 <div class="flex flex-col gap-1.5">
