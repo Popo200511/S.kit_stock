@@ -33,7 +33,11 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // ปิดไว้ — ตอนเปิดอยู่ Laravel จะจอง route "/storage/{path}" ไปเสิร์ฟไฟล์จาก
+            // disk 'local' นี้เอง (ต้องมี signed URL) ซึ่งชนกับ URL รูปสินค้าที่ใช้ path
+            // เดียวกันแต่มาจาก disk 'public' (ดู route ใน routes/web.php) — ทำให้รูปสินค้า
+            // ทุกรูปขึ้น 403 เพราะไปโดน route ของ disk 'local' ดักไว้ก่อนไปถึงรูปจริง
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

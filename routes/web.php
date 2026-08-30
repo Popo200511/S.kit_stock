@@ -16,6 +16,7 @@ use App\Livewire\Users;
 use App\Support\Nav;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 // แมปหน้าใน Nav (เมนูด้านข้าง) ไปยัง Livewire component จริง — เพิ่มเข้ามาทีละหน้า
 // ตามที่แต่ละ milestone เสร็จ หน้าไหนยังไม่มีในนี้จะตกไปใช้ ComingSoon แทน
@@ -51,6 +52,17 @@ Route::prefix('shop')->name('shop.')->group(function () {
     Route::get('/', Storefront\Index::class)->name('index');
     Route::get('/product/{product}', Storefront\Show::class)->name('product');
 });
+
+// เสิร์ฟไฟล์จาก public disk (รูปสินค้า ฯลฯ) ผ่าน route ตรงๆ แทนการพึ่ง symlink
+// public/storage -> storage/app/public เพียงอย่างเดียว — `php artisan serve` (ตัวที่ใช้รันจริง
+// บน Railway ตาม railway.json) เสิร์ฟไฟล์ผ่าน symlink แบบนี้ไม่ได้ดีนัก ทำให้ทุกรูปขึ้น
+// 403 Forbidden แม้ไฟล์กับ symlink จะถูกต้องครบก็ตาม — อ่านไฟล์ผ่าน Storage facade แทน
+// ตัดปัญหานี้ทิ้งไปเลย
+Route::get('/storage/{path}', function (string $path) {
+    abort_unless(Storage::disk('public')->exists($path), 404);
+
+    return response()->file(Storage::disk('public')->path($path));
+})->where('path', '.*')->name('public-storage');
 
 // sitemap.xml — ให้ Google เจอหน้าสินค้าทุกชิ้นในหน้าร้านได้ครบ ไม่ต้องรอให้มีคนลิงก์
 // มาเจอเอง อยู่ที่ root ตามธรรมเนียม ไม่ใช่ /shop/sitemap.xml
