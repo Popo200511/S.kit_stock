@@ -5,6 +5,7 @@ namespace App\Livewire\Users;
 use App\Enums\Permission;
 use App\Enums\UserRole;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Layout;
@@ -267,6 +268,14 @@ class Index extends Component
 
         return view('livewire.users.index', [
             'users' => $users,
+            // ออนไลน์ตอนนี้ = มี session ที่ใช้งานล่าสุดภายใน 5 นาทีที่ผ่านมา (ใช้ตาราง sessions
+            // ที่มีอยู่แล้วจาก SESSION_DRIVER=database ไม่ต้องเพิ่มตาราง/คอลัมน์ใหม่) — ต่างจาก
+            // "เข้าใช้ล่าสุด" ที่บันทึกแค่ครั้งเดียวตอน login ต่อให้ปิดเว็บไปแล้วก็ยังโชว์ค่าเดิม
+            'onlineUserIds' => DB::table('sessions')
+                ->whereNotNull('user_id')
+                ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
+                ->pluck('user_id')
+                ->unique(),
             'roles' => UserRole::cases(),
             'permissions' => Permission::cases(),
             'stats' => [

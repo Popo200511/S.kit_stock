@@ -50,13 +50,21 @@
     @forelse ($users as $u)
         <div class="bg-surface border border-border rounded-[15px] p-4.5 shadow-sm flex flex-col gap-3.5">
             <div class="flex flex-wrap gap-3.5 items-center">
-                <span class="w-[39px] h-[39px] shrink-0 rounded-full bg-accent-tint text-accent flex items-center justify-center text-sm font-semibold">
-                    {{ \Illuminate\Support\Str::of($u->name)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->join('') }}
+                <span class="relative w-[39px] h-[39px] shrink-0">
+                    <span class="w-full h-full rounded-full bg-accent-tint text-accent flex items-center justify-center text-sm font-semibold">
+                        {{ \Illuminate\Support\Str::of($u->name)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->join('') }}
+                    </span>
+                    @if ($onlineUserIds->contains($u->id))
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-accent border-2 border-surface" title="ออนไลน์ตอนนี้"></span>
+                    @endif
                 </span>
                 <div class="flex-1 min-w-[150px] flex flex-col leading-snug">
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-sm font-semibold">{{ $u->name }}</span>
                         <span @class(['text-[10.5px] font-medium px-2 py-0.5 rounded-full', 'bg-accent-tint text-accent' => $u->active, 'bg-warn-tint text-warn' => ! $u->active])>{{ $u->active ? 'ใช้งานอยู่' : 'ระงับการใช้งาน' }}</span>
+                        @if ($onlineUserIds->contains($u->id))
+                            <span class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-accent-tint text-accent">ออนไลน์ตอนนี้</span>
+                        @endif
                     </div>
                     <span class="text-xs text-muted2 truncate">{{ $u->email }} · เข้าใช้ล่าสุด {{ $u->last_login_at?->diffForHumans() ?? 'ยังไม่เคยเข้าใช้' }}</span>
                 </div>
