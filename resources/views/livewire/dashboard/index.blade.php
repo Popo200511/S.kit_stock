@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-4">
 
     {{-- KPI cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
         @foreach ($kpis as $k)
             <div class="bg-surface border border-border rounded-[15px] p-4 shadow-sm flex flex-col gap-2">
                 <div class="flex items-center justify-between gap-2">
@@ -11,6 +11,9 @@
                     </span>
                 </div>
                 <span class="text-[19px] font-semibold tracking-tight tabular-nums">{{ $k['value'] }}</span>
+                @if ($k['delta'])
+                    <span @class(['text-[11px] font-medium', 'text-accent' => $k['delta']['tone'] === 'accent', 'text-danger' => $k['delta']['tone'] === 'danger'])>{{ $k['delta']['text'] }}</span>
+                @endif
             </div>
         @endforeach
     </div>
@@ -145,11 +148,17 @@
                 <span class="text-sm font-semibold">ทางด่วนงานประจำวัน</span>
                 <div class="grid grid-cols-2 gap-2.5">
                     @can('stock_movements')
-                        <a href="{{ route('movements.index') }}" wire:navigate class="flex flex-col gap-2 p-3.5 border border-border rounded-xl hover:border-accent hover:bg-accent-soft">
+                        <a href="{{ route('movements.index', ['new' => 'in']) }}" wire:navigate class="flex flex-col gap-2 p-3.5 border border-border rounded-xl hover:border-accent hover:bg-accent-soft">
                             <span class="w-7 h-7 rounded-lg bg-accent-tint text-accent flex items-center justify-center">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v18M7 3 3 7M7 3l4 4M17 21V3M17 21l4-4M17 21l-4-4"></path></svg>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
                             </span>
-                            <span class="text-[12.5px] font-medium leading-snug">บันทึกรับเข้า–เบิกออก</span>
+                            <span class="text-[12.5px] font-medium leading-snug">+ รับเข้า</span>
+                        </a>
+                        <a href="{{ route('movements.index', ['new' => 'out']) }}" wire:navigate class="flex flex-col gap-2 p-3.5 border border-border rounded-xl hover:border-accent hover:bg-accent-soft">
+                            <span class="w-7 h-7 rounded-lg bg-accent-tint text-accent flex items-center justify-center">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg>
+                            </span>
+                            <span class="text-[12.5px] font-medium leading-snug">+ เบิกออก</span>
                         </a>
                     @endcan
                     @can('edit_products')
@@ -194,6 +203,44 @@
                     </div>
                 @empty
                     <span class="text-[12.5px] text-muted2">ยังไม่มีสินค้าที่ต้องสั่งซื้อ</span>
+                @endforelse
+            </div>
+
+            {{-- Online orders needing attention --}}
+            @can('online_sales')
+                <div class="bg-surface border border-border rounded-[15px] p-4.5 shadow-sm flex flex-col gap-3.5">
+                    <div class="flex items-center justify-between gap-2.5">
+                        <span class="text-sm font-semibold">ออนไลน์ที่ต้องดำเนินการ</span>
+                        <a href="{{ route('online.index') }}" wire:navigate class="text-xs text-accent font-medium hover:underline">ดูทั้งหมด</a>
+                    </div>
+                    @if ($onlineNeedsAction > 0)
+                        <a href="{{ route('online.index') }}" wire:navigate class="flex items-center gap-3 -m-1 p-1 rounded-lg hover:bg-surface2">
+                            <span class="w-9 h-9 shrink-0 rounded-lg bg-warn-tint text-warn flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3zM12 9v5M12 17h.01"></path></svg>
+                            </span>
+                            <span class="flex flex-col leading-snug">
+                                <span class="text-[13.5px] font-semibold">{{ number_format($onlineNeedsAction) }} ออเดอร์</span>
+                                <span class="text-[11.5px] text-muted2">ยังไม่จับคู่สินค้า / ยังไม่ตัดสต็อก / ล้มเหลว</span>
+                            </span>
+                        </a>
+                    @else
+                        <span class="text-[12.5px] text-muted2">ไม่มีออเดอร์ค้างดำเนินการ</span>
+                    @endif
+                </div>
+            @endcan
+
+            {{-- Dead / slow-moving stock --}}
+            <div class="bg-surface border border-border rounded-[15px] p-4.5 shadow-sm flex flex-col gap-3.5">
+                <div class="flex items-center justify-between gap-2.5">
+                    <span class="text-sm font-semibold">สต็อกจม (ไม่มีความเคลื่อนไหว 60 วัน)</span>
+                </div>
+                @forelse ($deadStock as $p)
+                    <div class="flex items-baseline justify-between gap-2.5 pb-2.5 border-b border-hairline last:border-0 last:pb-0">
+                        <span class="text-[12.5px] font-medium truncate">{{ $p->name }}</span>
+                        <span class="text-xs font-semibold tabular-nums whitespace-nowrap text-text4">{{ number_format($p->stock * $p->cost) }} บาท</span>
+                    </div>
+                @empty
+                    <span class="text-[12.5px] text-muted2">ไม่มีสินค้าที่นิ่งเกิน 60 วัน</span>
                 @endforelse
             </div>
         </div>

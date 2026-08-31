@@ -119,6 +119,15 @@ class Index extends Component
             }
         }
 
+        // Deep link from the dashboard's "+ รับเข้า" / "+ เบิกออก" quick-action buttons —
+        // opens straight into a blank create-document form of the requested type.
+        $newType = request()->query('new');
+        if (in_array($newType, ['in', 'out'], true) && auth()->user()->can('stock_movements')) {
+            $this->openCreate();
+            $this->setFormType($newType);
+            $this->js('window.history.replaceState(null, "", window.location.pathname)');
+        }
+
         // Deep link from the "ใกล้หมด / ต้องสั่งซื้อ" page's "สร้างใบรับเข้าตามจำนวนแนะนำ" button:
         // opens the create-document form pre-filled with this product and its suggested quantity.
         $quickInId = request()->query('quickIn');
