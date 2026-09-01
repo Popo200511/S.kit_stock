@@ -42,12 +42,29 @@
                 </span>
             </a>
 
-            @if (config('shop.phone'))
-                <a href="tel:{{ config('shop.phone') }}" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] border border-border4 text-[12.5px] font-medium text-text2 hover:border-accent hover:text-accent">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    {{ config('shop.phone') }}
-                </a>
-            @endif
+            <div class="flex items-center gap-2 shrink-0">
+                {{-- ไอคอนช่องทางขายอื่นๆ — โชว์เฉพาะช่องที่ตั้งค่า URL ไว้ใน .env (SHOP_SHOPEE_URL /
+                SHOP_FACEBOOK_URL) ยังไม่ตั้งก็ไม่ต้องมีไอคอนเปล่าๆ โผล่มาให้กดแล้วไปไหนไม่ได้ --}}
+                @if (config('shop.shopee_url'))
+                    <a href="{{ config('shop.shopee_url') }}" target="_blank" rel="noopener" title="ช้อปที่ Shopee"
+                        class="hidden sm:flex w-9 h-9 rounded-[10px] items-center justify-center bg-[#ee4d2d]/10 text-[#ee4d2d] hover:bg-[#ee4d2d]/20">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2l1.5 3h9L18 2h2l-2 4H6L4 2h2zM4 8h16l-1.4 12.2A2 2 0 0 1 16.6 22H7.4a2 2 0 0 1-2-1.8L4 8zm8 3a3 3 0 0 0-3 3 1 1 0 1 0 2 0 1 1 0 1 1 1 1 1 1 0 0 0 0 2 3 3 0 0 0 0-6z"></path></svg>
+                    </a>
+                @endif
+                @if (config('shop.facebook_url'))
+                    <a href="{{ config('shop.facebook_url') }}" target="_blank" rel="noopener" title="เพจ Facebook"
+                        class="hidden sm:flex w-9 h-9 rounded-[10px] items-center justify-center bg-[#1877f2]/10 text-[#1877f2] hover:bg-[#1877f2]/20">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"></path></svg>
+                    </a>
+                @endif
+
+                @if (config('shop.phone'))
+                    <a href="tel:{{ config('shop.phone') }}" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] border border-border4 text-[12.5px] font-medium text-text2 hover:border-accent hover:text-accent">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        {{ config('shop.phone') }}
+                    </a>
+                @endif
+            </div>
         </div>
     </header>
 

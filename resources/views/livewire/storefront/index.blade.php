@@ -70,6 +70,23 @@
         </div>
     @endif
 
+    {{-- Trust badges — สร้างความมั่นใจให้ลูกค้าใหม่ที่ยังไม่เคยซื้อกับร้าน --}}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        @foreach ([
+            ['d' => 'M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z', 'label' => 'ของแท้ 100%'],
+            ['d' => 'M3 3h13v10H3zM16 8h4l3 3v5h-7zM5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z', 'label' => 'จัดส่ง/รับที่ร้านไว'],
+            ['d' => 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6', 'label' => 'ราคาคุ้ม เป็นกันเอง'],
+            ['d' => 'M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z', 'label' => 'ให้คำปรึกษาฟรี'],
+        ] as $badge)
+            <div class="flex items-center gap-2.5 bg-surface border border-border rounded-xl px-3.5 py-3">
+                <span class="shrink-0 w-8 h-8 rounded-lg bg-accent-tint text-accent flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ $badge['d'] }}"></path></svg>
+                </span>
+                <span class="text-[12px] font-medium leading-snug">{{ $badge['label'] }}</span>
+            </div>
+        @endforeach
+    </div>
+
     {{-- Search + category chips: sticky right under the header, like an extended navbar --}}
     <div class="sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-surface2/95 backdrop-blur border-b border-line flex flex-col gap-3">
         <div class="flex gap-2">
