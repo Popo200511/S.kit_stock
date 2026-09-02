@@ -367,6 +367,9 @@ class Index extends Component
             'note' => $scopedMovements()->whereNotNull('note')->where('note', '!=', '')
                 ->distinct()->orderBy('note')->pluck('note')
                 ->map(fn ($v) => ['value' => (string) $v, 'label' => $v])->all(),
+            'party' => $scopedMovements()->whereNotNull('party')->where('party', '!=', '')
+                ->distinct()->orderBy('party')->pluck('party')
+                ->map(fn ($v) => ['value' => (string) $v, 'label' => $v])->all(),
             default => [],
         };
     }
@@ -960,6 +963,7 @@ class Index extends Component
                 'amount' => $query->whereIn('line_total', $values),
                 'user' => $query->whereHas('stockMovement', fn ($q) => $q->whereIn('user_id', $values)),
                 'note' => $query->whereHas('stockMovement', fn ($q) => $q->whereIn('note', $values)),
+                'party' => $query->whereHas('stockMovement', fn ($q) => $q->whereIn('party', $values)),
                 default => null,
             };
         }
@@ -1321,6 +1325,7 @@ class Index extends Component
                 'amount' => $this->columnOptions('amount'),
                 'user' => $this->columnOptions('user'),
                 'note' => $this->columnOptions('note'),
+                'party' => $this->columnOptions('party'),
             ],
         ])->layout('components.layouts.app', ['title' => 'รับเข้า–เบิกออก', 'subtitle' => 'เอกสารทั้งหมด พิมพ์ใบเสร็จและใบส่งของได้']);
     }

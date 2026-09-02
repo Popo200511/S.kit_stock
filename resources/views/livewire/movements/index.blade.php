@@ -261,6 +261,10 @@
                             <span>เวลา</span>
                         </th>
                         <th class="text-left px-4 py-2.5 relative whitespace-nowrap">
+                            <span>ชื่อลูกค้า</span>
+                            <x-excel-filter field="party" :options="$columnOptionsMap['party']" :selected="$columnFilters['party'] ?? null" align="left" wire:key="filter-party-{{ $typeTab }}-{{ $selectedMonth }}" />
+                        </th>
+                        <th class="text-left px-4 py-2.5 relative whitespace-nowrap">
                             <span>รายการสินค้า</span>
                             <x-excel-filter field="productName" :options="$columnOptionsMap['productName']" :selected="$columnFilters['productName'] ?? null" align="left" wire:key="filter-productName-{{ $typeTab }}-{{ $selectedMonth }}" />
                         </th>
@@ -310,6 +314,7 @@
                             </td>
                             <td class="px-4 py-2.5 text-text4 tabular-nums whitespace-nowrap">{{ $line->stockMovement->date->format('d/m/Y') }}</td>
                             <td class="px-4 py-2.5 text-text4 tabular-nums whitespace-nowrap">{{ $line->stockMovement->created_at->format('H:i') }}</td>
+                            <td class="px-4 py-2.5 text-muted whitespace-nowrap">{{ $line->stockMovement->party ?: '—' }}</td>
                             <td class="px-4 py-2.5">{{ $line->product_name }}</td>
                             <td class="px-4 py-2.5 text-muted whitespace-nowrap">{{ $line->category_name }}</td>
                             <td @class(['px-4 py-2.5 text-right font-semibold tabular-nums whitespace-nowrap', 'text-accent' => $isIn, 'text-text4' => ! $isIn])>{{ $isIn ? '+' : '-' }}{{ $line->qty }} {{ $line->unit }}</td>
