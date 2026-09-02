@@ -68,7 +68,7 @@
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
                     </button>
                     <div x-show="monthOpen" @click.outside="monthOpen = false" x-cloak
-                        class="absolute top-full right-0 mt-2 z-30 bg-surface border border-border2 rounded-xl shadow-lg p-3 flex flex-col gap-2 w-max">
+                        class="absolute top-full left-0 mt-2 z-30 bg-surface border border-border2 rounded-xl shadow-lg p-3 flex flex-col gap-2 w-max">
                         <button wire:click="setAllTime" @click="monthOpen = false"
                             class="w-full py-1.5 rounded-lg text-[12px] font-medium {{ $period === 'all' ? 'bg-accent text-white' : 'border border-border4 text-text3 hover:bg-sunken' }}">ทั้งหมด (ทุกช่วงเวลา)</button>
                         <div class="flex gap-1 bg-chip p-[3px] rounded-[9px]">
