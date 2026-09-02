@@ -69,10 +69,12 @@
                     <span class="text-[12.5px] text-danger bg-danger-tint rounded-lg px-3 py-2.5 leading-relaxed">บัญชีนี้ถูกระงับการใช้งาน ติดต่อเจ้าของร้าน</span>
                 @endif
 
-                <button type="submit"
-                    class="flex items-center justify-center gap-2.5 py-3.5 rounded-[11px] bg-login-accent text-white text-[15px] font-semibold hover:bg-login-accent-hover">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"></path></svg>
-                    เข้าสู่ระบบ
+                <button type="submit" wire:loading.attr="disabled" wire:target="submit"
+                    class="flex items-center justify-center gap-2.5 py-3.5 rounded-[11px] bg-login-accent text-white text-[15px] font-semibold hover:bg-login-accent-hover disabled:opacity-70 disabled:cursor-not-allowed">
+                    <svg wire:loading.remove wire:target="submit" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                    <svg wire:loading wire:target="submit" class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9" opacity="0.9"></path></svg>
+                    <span wire:loading.remove wire:target="submit">เข้าสู่ระบบ</span>
+                    <span wire:loading wire:target="submit">กำลังเข้าสู่ระบบ...</span>
                 </button>
             </form>
 
