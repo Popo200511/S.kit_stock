@@ -51,6 +51,8 @@ Route::middleware('guest')->group(function () {
 Route::prefix('shop')->name('shop.')->group(function () {
     Route::get('/', Storefront\Index::class)->name('index');
     Route::get('/product/{product}', Storefront\Show::class)->name('product');
+    Route::get('/about', Storefront\About::class)->name('about');
+    Route::get('/contact', Storefront\Contact::class)->name('contact');
 });
 
 // เสิร์ฟไฟล์จาก public disk (รูปสินค้า ฯลฯ) ผ่าน route ตรงๆ แทนการพึ่ง symlink

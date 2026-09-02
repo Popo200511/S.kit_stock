@@ -32,15 +32,24 @@
 
     <header class="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-line">
         <div class="max-w-[1100px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-            <a href="{{ route('shop.index') }}" class="flex items-center gap-2.5 shrink-0">
+            <a href="{{ route('shop.index') }}" wire:navigate class="flex items-center gap-2.5 shrink-0">
                 <span class="w-9 h-9 rounded-[10px] bg-accent text-white flex items-center justify-center font-semibold text-[15px]">
                     {{ mb_substr(config('shop.name'), 0, 1) }}
                 </span>
-                <span class="flex flex-col leading-tight">
+                <span class="flex-col leading-tight hidden sm:flex">
                     <span class="text-[15px] font-semibold tracking-tight">{{ config('shop.name') }}</span>
                     <span class="text-[11px] text-muted2">ใส่ใจทุกคำ เพื่อเขาที่คุณรัก</span>
                 </span>
             </a>
+
+            <nav class="hidden md:flex items-center gap-1 mx-auto">
+                <a href="{{ route('shop.index') }}" wire:navigate
+                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-accent bg-accent-tint' => request()->routeIs('shop.index') || request()->routeIs('shop.product'), 'text-text2 hover:bg-sunken' => ! (request()->routeIs('shop.index') || request()->routeIs('shop.product'))])>สินค้า</a>
+                <a href="{{ route('shop.about') }}" wire:navigate
+                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-accent bg-accent-tint' => request()->routeIs('shop.about'), 'text-text2 hover:bg-sunken' => ! request()->routeIs('shop.about')])>เกี่ยวกับเรา</a>
+                <a href="{{ route('shop.contact') }}" wire:navigate
+                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-accent bg-accent-tint' => request()->routeIs('shop.contact'), 'text-text2 hover:bg-sunken' => ! request()->routeIs('shop.contact')])>ติดต่อ/ที่ตั้งร้าน</a>
+            </nav>
 
             <div class="flex items-center gap-2 shrink-0">
                 {{-- ไอคอนช่องทางขายอื่นๆ — โชว์เฉพาะช่องที่ตั้งค่า URL ไว้ใน .env (SHOP_SHOPEE_URL /
