@@ -30,10 +30,22 @@
 </head>
 <body class="font-sans antialiased bg-surface2 text-text min-h-screen flex flex-col overflow-x-hidden">
 
+    {{-- Topbar ประกาศสั้นๆ + จุดขายหลัก — ใช้แถบเดียวสื่อสารทุกอย่างตั้งแต่แรกที่เข้าเว็บ --}}
+    <div class="bg-login-accent text-white text-[11.5px]">
+        <div class="max-w-[1100px] mx-auto px-4 sm:px-6 h-9 flex items-center justify-between gap-4 overflow-x-auto whitespace-nowrap">
+            <span>♥ ยินดีต้อนรับสู่ {{ config('shop.name') }} อาหารสัตว์ดี มีคุณภาพ บริการด้วยใจ ♥</span>
+            <span class="hidden lg:flex items-center gap-4 shrink-0">
+                <span>🚚 จัดส่งไว ทั่วประเทศ</span>
+                <span>🛡 ของแท้ 100% เชื่อถือได้</span>
+                <span>🐾 บริการด้วยใจ ใส่ใจทุกออเดอร์</span>
+            </span>
+        </div>
+    </div>
+
     <header class="sticky top-0 z-40 bg-surface/95 backdrop-blur border-b border-line">
         <div class="max-w-[1100px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
             <a href="{{ route('shop.index') }}" wire:navigate class="flex items-center gap-2.5 shrink-0">
-                <span class="w-9 h-9 rounded-[10px] bg-accent text-white flex items-center justify-center font-semibold text-[15px]">
+                <span class="w-9 h-9 rounded-[10px] bg-login-accent text-white flex items-center justify-center font-semibold text-[15px]">
                     {{ mb_substr(config('shop.name'), 0, 1) }}
                 </span>
                 <span class="flex-col leading-tight hidden sm:flex">
@@ -44,11 +56,11 @@
 
             <nav class="hidden md:flex items-center gap-1 mx-auto">
                 <a href="{{ route('shop.index') }}" wire:navigate
-                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-accent bg-accent-tint' => request()->routeIs('shop.index') || request()->routeIs('shop.product'), 'text-text2 hover:bg-sunken' => ! (request()->routeIs('shop.index') || request()->routeIs('shop.product'))])>สินค้า</a>
+                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-login-accent bg-login-accent-tint' => request()->routeIs('shop.index') || request()->routeIs('shop.product'), 'text-text2 hover:bg-sunken' => ! (request()->routeIs('shop.index') || request()->routeIs('shop.product'))])>สินค้า</a>
                 <a href="{{ route('shop.about') }}" wire:navigate
-                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-accent bg-accent-tint' => request()->routeIs('shop.about'), 'text-text2 hover:bg-sunken' => ! request()->routeIs('shop.about')])>เกี่ยวกับเรา</a>
+                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-login-accent bg-login-accent-tint' => request()->routeIs('shop.about'), 'text-text2 hover:bg-sunken' => ! request()->routeIs('shop.about')])>เกี่ยวกับเรา</a>
                 <a href="{{ route('shop.contact') }}" wire:navigate
-                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-accent bg-accent-tint' => request()->routeIs('shop.contact'), 'text-text2 hover:bg-sunken' => ! request()->routeIs('shop.contact')])>ติดต่อ/ที่ตั้งร้าน</a>
+                    @class(['px-3.5 py-2 rounded-lg text-[13px] font-medium', 'text-login-accent bg-login-accent-tint' => request()->routeIs('shop.contact'), 'text-text2 hover:bg-sunken' => ! request()->routeIs('shop.contact')])>ติดต่อ/ที่ตั้งร้าน</a>
             </nav>
 
             <div class="flex items-center gap-2 shrink-0">
@@ -68,7 +80,7 @@
                 @endif
 
                 @if (config('shop.phone'))
-                    <a href="tel:{{ config('shop.phone') }}" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] border border-border4 text-[12.5px] font-medium text-text2 hover:border-accent hover:text-accent">
+                    <a href="tel:{{ config('shop.phone') }}" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] border border-border4 text-[12.5px] font-medium text-text2 hover:border-login-accent hover:text-login-accent">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                         {{ config('shop.phone') }}
                     </a>
@@ -92,7 +104,7 @@
     ทันทีจากทุกหน้ารวมถึงหน้ารายการสินค้า ตรงกับข้อความ hero ที่สัญญาว่า "โทรสั่งซื้อได้ทันที" --}}
     @if (config('shop.phone'))
         <a href="tel:{{ config('shop.phone') }}"
-            class="sm:hidden fixed bottom-24 right-5 z-50 w-14 h-14 rounded-full bg-accent text-white shadow-lg flex items-center justify-center hover:opacity-90"
+            class="sm:hidden fixed bottom-24 right-5 z-50 w-14 h-14 rounded-full bg-login-accent text-white shadow-lg flex items-center justify-center hover:opacity-90"
             title="โทรสอบถาม/สั่งซื้อ">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
         </a>
