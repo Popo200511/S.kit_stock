@@ -15,12 +15,15 @@ class Index extends Component
 {
     public string $selectedMonth;
 
-    /** 'monthly' (7 เดือนล่าสุด) | 'daily' (รายวันของเดือนที่เลือก) */
+    /** 'monthly' (7 เดือนล่าสุด) | 'daily' (รายวันของเดือนที่เลือก) | 'yearly' (12 เดือนของปีที่เลือก) */
     public string $chartMode = 'monthly';
+
+    public int $selectedYear;
 
     public function mount(): void
     {
         $this->selectedMonth = now()->format('Y-m');
+        $this->selectedYear = (int) now()->year;
     }
 
     public function selectMonth(string $month): void
@@ -33,6 +36,16 @@ class Index extends Component
         $this->chartMode = $mode;
     }
 
+    public function prevYear(): void
+    {
+        $this->selectedYear--;
+    }
+
+    public function nextYear(): void
+    {
+        $this->selectedYear++;
+    }
+
     protected function monthlyOutSeries(): array
     {
         $months = collect(range(6, 0))->map(fn ($i) => now()->startOfMonth()->subMonths($i));
@@ -40,6 +53,25 @@ class Index extends Component
         $totals = StockMovement::query()
             ->where('type', 'out')
             ->where('date', '>=', $months->first())
+            ->selectRaw("DATE_FORMAT(date, '%Y-%m') as ym, SUM(total) as total")
+            ->groupBy('ym')
+            ->pluck('total', 'ym');
+
+        return $months->map(fn ($m) => [
+            'key' => $m->format('Y-m'),
+            'label' => $m->translatedFormat('M'),
+            'out' => (float) ($totals[$m->format('Y-m')] ?? 0),
+        ])->all();
+    }
+
+    /** ยอดเบิกออกแต่ละเดือน (ม.ค.–ธ.ค.) ของปี $year */
+    protected function yearlyOutSeries(int $year): array
+    {
+        $months = collect(range(1, 12))->map(fn ($m) => Carbon::create($year, $m, 1));
+
+        $totals = StockMovement::query()
+            ->where('type', 'out')
+            ->whereBetween('date', [$months->first(), $months->last()->copy()->endOfMonth()])
             ->selectRaw("DATE_FORMAT(date, '%Y-%m') as ym, SUM(total) as total")
             ->groupBy('ym')
             ->pluck('total', 'ym');
@@ -150,6 +182,9 @@ class Index extends Component
         $dailySeries = $this->dailyOutSeries($monthStart, $monthEnd);
         $maxDaily = max(1, collect($dailySeries)->max('out'));
 
+        $yearlySeries = $this->yearlyOutSeries($this->selectedYear);
+        $maxYearly = max(1, collect($yearlySeries)->max('out'));
+
         $catBars = Category::withCount('products')
             ->with(['products' => fn ($q) => $q->select('id', 'category_id', 'cost', 'stock')])
             ->get()
@@ -188,6 +223,8 @@ class Index extends Component
             'maxOut' => $maxOut,
             'dailySeries' => $dailySeries,
             'maxDaily' => $maxDaily,
+            'yearlySeries' => $yearlySeries,
+            'maxYearly' => $maxYearly,
             'catBars' => $catBars,
             'maxCat' => $maxCat,
             'topProducts' => $topProducts,
