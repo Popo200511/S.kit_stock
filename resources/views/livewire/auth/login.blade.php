@@ -1,7 +1,7 @@
 <div class="min-h-screen grid grid-cols-1 lg:grid-cols-[1.02fr_1fr]" style="background: linear-gradient(160deg, #fdf7f8 0%, #fbeef1 100%);">
 
     {{-- Hero panel --}}
-    <div class="hidden lg:flex relative flex-col overflow-hidden bg-[#efe6e2] min-h-screen bg-cover bg-center" style="background-image: url('{{ asset('images/login-hero-dog.png') }}');">
+    <div data-aos="fade-right" class="hidden lg:flex relative flex-col overflow-hidden bg-[#efe6e2] min-h-screen bg-cover bg-center" style="background-image: url('{{ asset('images/login-hero-dog.png') }}');">
         <span class="absolute inset-0 bg-gradient-to-b from-black/45 via-black/10 to-black/5"></span>
 
         <div class="relative p-10 flex items-center gap-4">
@@ -24,7 +24,7 @@
 
     {{-- Login card --}}
     <div class="flex flex-col items-center justify-center gap-5 p-6 sm:p-8">
-        <div class="w-full max-w-[398px] bg-white rounded-[20px] shadow-xl p-6 sm:p-8 flex flex-col gap-4">
+        <div data-aos="fade-left" data-aos-delay="100" class="w-full max-w-[398px] bg-white rounded-[20px] shadow-xl p-6 sm:p-8 flex flex-col gap-4">
             <div class="flex flex-col items-center gap-2.5">
                 <span class="w-16 h-16 rounded-full overflow-hidden bg-white shadow flex items-center justify-center">
                     <img src="{{ asset('images/logo.png') }}" alt="ส.กิจการค้า" class="w-full h-full object-cover">
