@@ -340,7 +340,14 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-[11.5px] text-muted">สินค้า</label>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-[11.5px] text-muted">สินค้า</label>
+                                @if ($lineProduct)
+                                    <span @class(['text-[11px] font-medium tabular-nums', 'text-danger' => (float) $lineProduct->stock <= 0, 'text-muted2' => (float) $lineProduct->stock > 0])>
+                                        คงเหลือ {{ $lineProduct->stock_display }} {{ $lineProduct->unit?->name }}
+                                    </span>
+                                @endif
+                            </div>
                             <x-combobox field="lineProductId" :options="$productOptions" placeholder="เลือกสินค้า" :live="true" />
                         </div>
                         <div class="flex flex-col gap-1.5">

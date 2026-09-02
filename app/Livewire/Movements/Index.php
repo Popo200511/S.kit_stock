@@ -1102,9 +1102,10 @@ class Index extends Component
             ];
         }
 
-        $products = Product::orderBy('name')->get(['id', 'name', 'sku', 'cost', 'price']);
+        $products = Product::with('unit:id,name')->orderBy('name')->get(['id', 'name', 'sku', 'cost', 'price', 'stock', 'unit_id']);
         $isIn = $this->form['type'] === 'in';
 
+        $lineProduct = null;
         $lineVariantOptions = [];
         if ($this->lineProductId !== '') {
             $lineProduct = $products->firstWhere('id', (int) $this->lineProductId);
@@ -1124,6 +1125,7 @@ class Index extends Component
             'kpis' => $kpis,
             'products' => $products,
             'productOptions' => $products->map(fn ($p) => ['value' => (string) $p->id, 'label' => $p->name])->values()->all(),
+            'lineProduct' => $lineProduct,
             'lineVariantOptions' => $lineVariantOptions,
             'lineCategoryOptions' => Category::orderBy('name')->get(['id', 'name'])
                 ->map(fn ($c) => ['value' => (string) $c->id, 'label' => $c->name])->values()->all(),
