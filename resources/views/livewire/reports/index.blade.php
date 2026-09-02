@@ -45,8 +45,8 @@
                         </div>
                     @endif
                     <div class="flex gap-1 bg-chip p-[3px] rounded-[9px]">
-                        <button wire:click="setChartMode('monthly')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartMode === 'monthly' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายเดือน</button>
                         <button wire:click="setChartMode('daily')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartMode === 'daily' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายวัน</button>
+                        <button wire:click="setChartMode('monthly')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartMode === 'monthly' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายเดือน</button>
                         <button wire:click="setChartMode('yearly')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartMode === 'yearly' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายปี</button>
                     </div>
                 </div>
