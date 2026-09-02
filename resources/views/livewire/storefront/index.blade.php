@@ -7,7 +7,7 @@
         <div aria-hidden="true" class="absolute -bottom-20 -left-10 w-56 h-56 rounded-full bg-black/10"></div>
 
         <div class="relative flex flex-col lg:flex-row items-center gap-6 px-5 py-8 sm:px-9 sm:py-11">
-            <div class="flex-1 min-w-0 flex flex-col gap-3 text-center lg:text-left items-center lg:items-start">
+            <div data-aos="fade-right" class="flex-1 min-w-0 flex flex-col gap-3 text-center lg:text-left items-center lg:items-start">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-[11.5px] font-medium">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2-6.3-4.6-6.3 4.6 2.3-7.2-6-4.6h7.6z"></path></svg>
                     เพื่อนแท้ของเกษตรกรและคนรักสัตว์เลี้ยง
@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <div class="shrink-0 w-[150px] h-[150px] sm:w-[190px] sm:h-[190px] rounded-full bg-white/15 p-2.5 shadow-inner">
+            <div data-aos="fade-left" data-aos-delay="100" class="shrink-0 w-[150px] h-[150px] sm:w-[190px] sm:h-[190px] rounded-full bg-white/15 p-2.5 shadow-inner">
                 <img src="{{ asset('images/login-hero-dog.png') }}" alt="" aria-hidden="true" class="w-full h-full rounded-full object-cover border-4 border-white/40">
             </div>
         </div>
@@ -44,7 +44,7 @@
 
     {{-- Category quick-shop --}}
     @if ($categories->count() > 0)
-        <div class="flex gap-3 overflow-x-auto pb-1 -mx-4 sm:-mx-6 px-4 sm:px-6">
+        <div data-aos="fade-up" class="flex gap-3 overflow-x-auto pb-1 -mx-4 sm:-mx-6 px-4 sm:px-6">
             <button wire:click="selectCategory(null)" wire:key="quickcat-all"
                 class="shrink-0 w-[84px] flex flex-col items-center gap-1.5 group">
                 <span @class(['w-14 h-14 rounded-2xl flex items-center justify-center transition ring-2 ring-transparent group-hover:ring-accent-border bg-chip text-text3', 'ring-accent' => $categoryId === null])>
@@ -71,7 +71,7 @@
     @endif
 
     {{-- Trust badges — สร้างความมั่นใจให้ลูกค้าใหม่ที่ยังไม่เคยซื้อกับร้าน --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+    <div data-aos="fade-up" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         @foreach ([
             ['d' => 'M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z', 'label' => 'ของแท้ 100%'],
             ['d' => 'M3 3h13v10H3zM16 8h4l3 3v5h-7zM5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z', 'label' => 'จัดส่ง/รับที่ร้านไว'],
@@ -125,8 +125,9 @@
     {{-- Product grid --}}
     @if ($products->count() > 0)
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
-            @foreach ($products as $product)
+            @foreach ($products as $i => $product)
                 <a href="{{ route('shop.product', $product->id) }}" wire:navigate
+                    data-aos="fade-up" data-aos-delay="{{ ($i % 8) * 50 }}"
                     class="bg-surface border border-border rounded-[14px] overflow-hidden shadow-sm hover:shadow-md hover:border-accent-border transition flex flex-col">
                     <div class="aspect-square bg-sunken flex items-center justify-center overflow-hidden">
                         @if ($product->photo_path)
