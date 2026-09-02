@@ -18,7 +18,12 @@ class Index extends Component
     /** 'monthly' (7 เดือนล่าสุด) | 'daily' (รายวันของเดือนที่เลือก) | 'yearly' (12 เดือนของปีที่เลือก) */
     public string $chartMode = 'monthly';
 
+    /** 'bar' | 'pie' | 'table' — รูปแบบการแสดงผลของ $chartMode ที่เลือกไว้ */
+    public string $chartView = 'bar';
+
     public int $selectedYear;
+
+    protected array $palette = ['#0b7a55', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#ec4899'];
 
     public function mount(): void
     {
@@ -34,6 +39,11 @@ class Index extends Component
     public function setChartMode(string $mode): void
     {
         $this->chartMode = $mode;
+    }
+
+    public function setChartView(string $view): void
+    {
+        $this->chartView = $view;
     }
 
     public function prevYear(): void
@@ -138,6 +148,33 @@ class Index extends Component
         ];
     }
 
+    /** แปลงชุดข้อมูล [key,label,out] ให้เป็น conic-gradient + legend สำหรับมุมมองวงกลม — ใช้ได้กับทั้งรายวัน/รายเดือน/รายปี เพราะโครงสร้างเหมือนกันหมด */
+    protected function pieForSeries(array $series): array
+    {
+        $grandTotal = array_sum(array_column($series, 'out'));
+        $cumulative = 0;
+        $stops = [];
+        $legend = [];
+
+        foreach ($series as $i => $s) {
+            if ($s['out'] <= 0) {
+                continue;
+            }
+            $color = $this->palette[$i % count($this->palette)];
+            $pct = $grandTotal > 0 ? $s['out'] / $grandTotal * 100 : 0;
+            $from = $cumulative;
+            $cumulative += $pct;
+            $stops[] = "{$color} {$from}% {$cumulative}%";
+            $legend[] = ['label' => $s['label'], 'color' => $color, 'value' => $s['out'], 'pct' => round($pct)];
+        }
+
+        return [
+            'gradient' => $stops ? 'conic-gradient('.implode(', ', $stops).')' : 'conic-gradient(var(--hairline) 0% 100%)',
+            'total' => $grandTotal,
+            'legend' => $legend,
+        ];
+    }
+
     /** "+12%" / "-8%" vs the previous month, or null when the previous month has nothing to compare against. */
     protected function pctDelta(float $current, float $previous): ?array
     {
@@ -185,6 +222,15 @@ class Index extends Component
         $yearlySeries = $this->yearlyOutSeries($this->selectedYear);
         $maxYearly = max(1, collect($yearlySeries)->max('out'));
 
+        // ชุดข้อมูลของโหมดเวลาที่กำลังดูอยู่ (รายวัน/รายเดือน/รายปี) — ใช้ร่วมกันสำหรับมุมมอง
+        // วงกลม/ตาราง ที่ไม่สนใจว่าเป็นแท่งแบบไหน แค่อยากได้ "ป้ายกำกับ + ยอดเงิน" ของแต่ละช่วง
+        $activeSeries = match ($this->chartMode) {
+            'daily' => $dailySeries,
+            'yearly' => $yearlySeries,
+            default => $series,
+        };
+        $activePie = $this->pieForSeries($activeSeries);
+
         $catBars = Category::withCount('products')
             ->with(['products' => fn ($q) => $q->select('id', 'category_id', 'cost', 'stock')])
             ->get()
@@ -225,6 +271,8 @@ class Index extends Component
             'maxDaily' => $maxDaily,
             'yearlySeries' => $yearlySeries,
             'maxYearly' => $maxYearly,
+            'activeSeries' => $activeSeries,
+            'activePie' => $activePie,
             'catBars' => $catBars,
             'maxCat' => $maxCat,
             'topProducts' => $topProducts,

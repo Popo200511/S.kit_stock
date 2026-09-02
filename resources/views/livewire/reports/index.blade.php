@@ -49,10 +49,48 @@
                         <button wire:click="setChartMode('monthly')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartMode === 'monthly' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายเดือน</button>
                         <button wire:click="setChartMode('yearly')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartMode === 'yearly' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายปี</button>
                     </div>
+                    <div class="flex gap-1 bg-chip p-[3px] rounded-[9px]">
+                        <button wire:click="setChartView('bar')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartView === 'bar' ? 'bg-surface shadow-sm' : 'text-muted2' }}">แท่ง</button>
+                        <button wire:click="setChartView('pie')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartView === 'pie' ? 'bg-surface shadow-sm' : 'text-muted2' }}">วงกลม</button>
+                        <button wire:click="setChartView('table')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartView === 'table' ? 'bg-surface shadow-sm' : 'text-muted2' }}">ตาราง</button>
+                    </div>
                 </div>
             </div>
 
-            @if ($chartMode === 'monthly')
+            @if ($chartView === 'pie')
+                <div class="flex flex-wrap items-center gap-5">
+                    <div class="relative w-[186px] h-[186px] shrink-0 rounded-full" style="background:{{ $activePie['gradient'] }}">
+                        <div class="absolute inset-[31%] rounded-full bg-surface flex flex-col items-center justify-center gap-0.5 shadow-[inset_0_0_0_1px_var(--line)] text-center px-2">
+                            <span class="text-[10.5px] text-muted2">รวมทั้งหมด</span>
+                            <span class="text-sm font-semibold tabular-nums tracking-tight">{{ number_format($activePie['total']) }} บาท</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-[190px] flex flex-col gap-1 max-h-[196px] overflow-y-auto">
+                        @forelse ($activePie['legend'] as $l)
+                            <div class="flex items-center gap-2 text-[12.5px] rounded-lg px-1.5 py-1">
+                                <i class="w-2.5 h-2.5 shrink-0 rounded-[3px] inline-block" style="background:{{ $l['color'] }}"></i>
+                                <span class="flex-1 min-w-0 truncate">{{ $l['label'] }}</span>
+                                <span class="tabular-nums text-text4 whitespace-nowrap">{{ number_format($l['value']) }} บาท</span>
+                                <span class="tabular-nums font-semibold min-w-[38px] text-right whitespace-nowrap">{{ $l['pct'] }}%</span>
+                            </div>
+                        @empty
+                            <span class="text-sm text-muted2">ยังไม่มีข้อมูลในช่วงนี้</span>
+                        @endforelse
+                    </div>
+                </div>
+            @elseif ($chartView === 'table')
+                <div class="border border-line rounded-xl overflow-hidden max-h-[260px] overflow-y-auto">
+                    <div class="grid grid-cols-2 gap-2.5 px-3.5 py-2.5 bg-surface2 border-b border-line text-[11px] font-semibold text-muted2 sticky top-0">
+                        <span>ช่วงเวลา</span><span class="text-right">ยอดเบิกออก</span>
+                    </div>
+                    @foreach ($activeSeries as $s)
+                        <div wire:key="tblrow-{{ $s['key'] }}" class="grid grid-cols-2 gap-2.5 px-3.5 py-2.5 border-b border-hairline2 last:border-0 text-[12.5px] items-center">
+                            <span class="font-medium">{{ $s['label'] }}</span>
+                            <span class="text-right tabular-nums {{ $s['out'] > 0 ? 'text-accent font-semibold' : 'text-text4' }}">{{ number_format($s['out']) }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            @elseif ($chartMode === 'monthly')
                 <div class="flex items-end gap-2 h-[196px] border-b border-line">
                     @foreach ($series as $s)
                         <button type="button" wire:key="bar-{{ $s['key'] }}" wire:click="selectMonth('{{ $s['key'] }}')" title="ดูข้อมูลเดือน{{ $s['label'] }}"
