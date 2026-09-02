@@ -390,21 +390,33 @@
                         <span class="text-[14.5px] font-semibold tabular-nums">{{ number_format($this->lineTotal(), 2) }}</span>
                     </div>
 
-                    <button type="button" wire:click="addLine" class="self-start flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] border border-dashed border-accent-border3 text-accent text-[12.5px] font-medium hover:bg-accent-tint">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>เพิ่มรายการนี้ในเอกสาร
-                    </button>
+                    <div class="flex gap-2">
+                        @if ($editingLineIndex !== null)
+                            <button type="button" wire:click="addLine" class="flex-1 flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[10px] bg-accent text-white text-[12.5px] font-medium hover:bg-accent-hover">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"></path></svg>บันทึกการแก้ไขรายการ
+                            </button>
+                            <button type="button" wire:click="cancelEditLine" class="px-3.5 py-2 rounded-[10px] border border-border4 text-text2 text-[12.5px] font-medium hover:bg-hairline">ยกเลิก</button>
+                        @else
+                            <button type="button" wire:click="addLine" class="self-start flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] border border-dashed border-accent-border3 text-accent text-[12.5px] font-medium hover:bg-accent-tint">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>เพิ่มรายการนี้ในเอกสาร
+                            </button>
+                        @endif
+                    </div>
                 </div>
 
                 @if (! empty($formLines))
                     <div class="border border-border rounded-[13px] overflow-hidden">
                         @foreach ($formLines as $i => $l)
-                            <div class="flex flex-col gap-1.5 px-3.5 py-2.5 border-b border-hairline2 text-[12.5px]">
+                            <div @class(['flex flex-col gap-1.5 px-3.5 py-2.5 border-b border-hairline2 last:border-0 text-[12.5px]', 'bg-accent-tint' => $editingLineIndex === $i])>
                                 <div class="flex items-center gap-2.5">
                                     <div class="flex-1 min-w-0 flex flex-col leading-snug">
                                         <span class="truncate">{{ $l['name'] }}</span>
                                         <span class="text-[11px] text-muted2 tabular-nums">{{ $l['qty'] }} {{ $l['unit'] }} × {{ number_format($l['unit_price'], 2) }}</span>
                                     </div>
                                     <span class="font-semibold tabular-nums">{{ number_format($l['line_total'], 2) }}</span>
+                                    <button type="button" wire:click="editLine({{ $i }})" title="แก้ไขรายการนี้" class="w-6 h-6 rounded-lg flex items-center justify-center text-muted2 hover:bg-accent-tint hover:text-accent">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
+                                    </button>
                                     <button type="button" wire:click="removeLine({{ $i }})" class="w-6 h-6 rounded-lg flex items-center justify-center text-muted2 hover:bg-danger-tint hover:text-danger">✕</button>
                                 </div>
                                 @if (($l['implied_cost'] ?? null) !== null)

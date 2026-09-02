@@ -41,6 +41,9 @@ class Index extends Component
 
     public array $formLines = [];
 
+    /** index ใน $formLines ที่กำลังแก้ไขอยู่ (ยังไม่ได้บันทึกเอกสาร) — null คือกำลังเพิ่มรายการใหม่ ไม่ใช่แก้ไขของเดิม */
+    public ?int $editingLineIndex = null;
+
     public string $lineProductId = '';
 
     public string $lineVariantId = '';
@@ -307,6 +310,7 @@ class Index extends Component
 
         $this->form = ['type' => 'in', 'date' => now()->toDateString(), 'party' => '', 'note' => ''];
         $this->formLines = [];
+        $this->editingLineIndex = null;
         $this->resetLineEntry();
         $this->formError = null;
         $this->showForm = true;
@@ -315,12 +319,14 @@ class Index extends Component
     public function closeForm(): void
     {
         $this->showForm = false;
+        $this->editingLineIndex = null;
     }
 
     public function setFormType(string $type): void
     {
         $this->form['type'] = $type;
         $this->formLines = [];
+        $this->editingLineIndex = null;
         $this->resetLineEntry();
     }
 
@@ -449,7 +455,7 @@ class Index extends Component
             }
         }
 
-        $this->formLines[] = [
+        $line = [
             'product_id' => $product->id,
             'product_variant_id' => $variant?->id,
             'name' => $product->name,
@@ -464,12 +470,58 @@ class Index extends Component
             'update_cost' => $updateCost,
         ];
 
+        if ($this->editingLineIndex !== null && array_key_exists($this->editingLineIndex, $this->formLines)) {
+            $this->formLines[$this->editingLineIndex] = $line;
+            $this->editingLineIndex = null;
+        } else {
+            $this->formLines[] = $line;
+        }
+
+        $this->resetLineEntry();
+        $this->formError = null;
+    }
+
+    /** โหลดรายการที่เพิ่มไว้แล้ว (ในเอกสารที่ยังไม่บันทึก) กลับเข้าช่องกรอก เพื่อแก้ไขก่อนกดบันทึกจริง */
+    public function editLine(int $index): void
+    {
+        if (! array_key_exists($index, $this->formLines)) {
+            return;
+        }
+
+        $line = $this->formLines[$index];
+
+        $this->lineProductId = (string) $line['product_id'];
+        $this->lineVariantId = $line['product_variant_id'] ? (string) $line['product_variant_id'] : '';
+        $this->lineQty = (string) $line['qty'];
+        $this->lineUnitPrice = (string) $line['unit_price'];
+
+        $product = Product::find($line['product_id']);
+        $this->lineCategoryId = $product?->category_id ? (string) $product->category_id : '';
+        $this->lineUnitId = $product?->unit_id ? (string) $product->unit_id : '';
+        $this->lineCostMissing = $this->form['type'] === 'in' && (float) ($product?->cost ?? 0) <= 0;
+
+        $this->editingLineIndex = $index;
+        $this->formError = null;
+    }
+
+    /** ยกเลิกการแก้ไขรายการ กลับไปเป็นโหมด "เพิ่มรายการใหม่" โดยไม่แตะรายการเดิมที่เพิ่งกดแก้ไข */
+    public function cancelEditLine(): void
+    {
+        $this->editingLineIndex = null;
         $this->resetLineEntry();
         $this->formError = null;
     }
 
     public function removeLine(int $index): void
     {
+        if ($this->editingLineIndex === $index) {
+            $this->cancelEditLine();
+        } elseif ($this->editingLineIndex !== null && $this->editingLineIndex > $index) {
+            // ลบรายการก่อนหน้ารายการที่กำลังแก้ไขอยู่ — array_values() ด้านล่างจะเลื่อน index
+            // ทุกตัวหลังจากนี้ขึ้นมา 1 ตำแหน่ง ต้องขยับตัวชี้ตามไปด้วย ไม่งั้นจะไปชี้ผิดรายการ
+            $this->editingLineIndex--;
+        }
+
         unset($this->formLines[$index]);
         $this->formLines = array_values($this->formLines);
     }
@@ -564,6 +616,7 @@ class Index extends Component
         }
 
         $this->showForm = false;
+        $this->editingLineIndex = null;
     }
 
     /**
