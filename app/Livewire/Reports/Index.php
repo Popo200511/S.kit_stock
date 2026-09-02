@@ -15,6 +15,9 @@ class Index extends Component
 {
     public string $selectedMonth;
 
+    /** 'monthly' (7 เดือนล่าสุด) | 'daily' (รายวันของเดือนที่เลือก) */
+    public string $chartMode = 'monthly';
+
     public function mount(): void
     {
         $this->selectedMonth = now()->format('Y-m');
@@ -23,6 +26,11 @@ class Index extends Component
     public function selectMonth(string $month): void
     {
         $this->selectedMonth = $month;
+    }
+
+    public function setChartMode(string $mode): void
+    {
+        $this->chartMode = $mode;
     }
 
     protected function monthlyOutSeries(): array
@@ -40,6 +48,28 @@ class Index extends Component
             'key' => $m->format('Y-m'),
             'label' => $m->translatedFormat('M'),
             'out' => (float) ($totals[$m->format('Y-m')] ?? 0),
+        ])->all();
+    }
+
+    /** ยอดเบิกออกแต่ละวันของเดือน $monthStart — วันที่ยังไม่ถึง (ของเดือนปัจจุบัน) ก็ยังโชว์เป็นแท่ง 0 ไว้ตามปกติ */
+    protected function dailyOutSeries(Carbon $monthStart, Carbon $monthEnd): array
+    {
+        $totals = StockMovement::query()
+            ->where('type', 'out')
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->selectRaw("DATE_FORMAT(date, '%Y-%m-%d') as ymd, SUM(total) as total")
+            ->groupBy('ymd')
+            ->pluck('total', 'ymd');
+
+        $days = collect();
+        for ($d = $monthStart->copy(); $d->lte($monthEnd); $d->addDay()) {
+            $days->push($d->copy());
+        }
+
+        return $days->map(fn ($d) => [
+            'key' => $d->format('Y-m-d'),
+            'label' => $d->format('j'),
+            'out' => (float) ($totals[$d->format('Y-m-d')] ?? 0),
         ])->all();
     }
 
@@ -117,6 +147,9 @@ class Index extends Component
         $series = $this->monthlyOutSeries();
         $maxOut = max(1, collect($series)->max('out'));
 
+        $dailySeries = $this->dailyOutSeries($monthStart, $monthEnd);
+        $maxDaily = max(1, collect($dailySeries)->max('out'));
+
         $catBars = Category::withCount('products')
             ->with(['products' => fn ($q) => $q->select('id', 'category_id', 'cost', 'stock')])
             ->get()
@@ -153,6 +186,8 @@ class Index extends Component
             'kpis' => $kpis,
             'series' => $series,
             'maxOut' => $maxOut,
+            'dailySeries' => $dailySeries,
+            'maxDaily' => $maxDaily,
             'catBars' => $catBars,
             'maxCat' => $maxCat,
             'topProducts' => $topProducts,

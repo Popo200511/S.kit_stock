@@ -17,30 +17,59 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {{-- Monthly sales chart --}}
+        {{-- Sales chart: monthly (7 เดือนล่าสุด) หรือ รายวัน (ของเดือนที่เลือก) --}}
         <div class="bg-surface border border-border rounded-[15px] p-4.5 shadow-sm">
-            <div class="flex flex-col gap-0.5 mb-5">
-                <span class="text-[14.5px] font-semibold">ยอดขายรายเดือน</span>
-                <span class="text-xs text-muted2">มูลค่าเบิกออก {{ $series[0]['label'] }} – {{ $series[count($series) - 1]['label'] }} · คลิกแท่งเพื่อดูข้อมูลเดือนนั้น</span>
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+                <div class="flex flex-col gap-0.5">
+                    @if ($chartMode === 'monthly')
+                        <span class="text-[14.5px] font-semibold">ยอดขายรายเดือน</span>
+                        <span class="text-xs text-muted2">มูลค่าเบิกออก {{ $series[0]['label'] }} – {{ $series[count($series) - 1]['label'] }} · คลิกแท่งเพื่อดูข้อมูลเดือนนั้น</span>
+                    @else
+                        <span class="text-[14.5px] font-semibold">ยอดขายรายวัน · {{ $selectedMonthLabel }}</span>
+                        <span class="text-xs text-muted2">มูลค่าเบิกออกแต่ละวันในเดือนที่เลือก</span>
+                    @endif
+                </div>
+                <div class="flex gap-1 bg-chip p-[3px] rounded-[9px]">
+                    <button wire:click="setChartMode('monthly')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartMode === 'monthly' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายเดือน</button>
+                    <button wire:click="setChartMode('daily')" class="px-2.5 py-1.5 rounded-[7px] text-xs font-medium {{ $chartMode === 'daily' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายวัน</button>
+                </div>
             </div>
-            <div class="flex items-end gap-2 h-[196px] border-b border-line">
-                @foreach ($series as $s)
-                    <button type="button" wire:key="bar-{{ $s['key'] }}" wire:click="selectMonth('{{ $s['key'] }}')" title="ดูข้อมูลเดือน{{ $s['label'] }}"
-                        class="flex-1 h-full flex flex-col justify-end items-center gap-1.5 group cursor-pointer">
-                        <span @class(['text-[10.5px] tabular-nums', 'text-accent font-semibold' => $s['key'] === $selectedMonth, 'text-muted' => $s['key'] !== $selectedMonth])>{{ $s['out'] > 0 ? number_format($s['out'] / 1000, 1).'k' : '' }}</span>
-                        <div @class([
-                            'w-full max-w-[42px] rounded-t-[6px] bg-accent transition-opacity',
-                            'opacity-100' => $s['key'] === $selectedMonth,
-                            'opacity-40 group-hover:opacity-70' => $s['key'] !== $selectedMonth,
-                        ]) style="height:{{ round($s['out'] / $maxOut * 100) }}%"></div>
-                    </button>
-                @endforeach
-            </div>
-            <div class="flex gap-2 mt-2">
-                @foreach ($series as $s)
-                    <span wire:key="lbl-{{ $s['key'] }}" @class(['flex-1 text-center text-[11px]', 'text-accent font-semibold' => $s['key'] === $selectedMonth, 'text-muted2' => $s['key'] !== $selectedMonth])>{{ $s['label'] }}</span>
-                @endforeach
-            </div>
+
+            @if ($chartMode === 'monthly')
+                <div class="flex items-end gap-2 h-[196px] border-b border-line">
+                    @foreach ($series as $s)
+                        <button type="button" wire:key="bar-{{ $s['key'] }}" wire:click="selectMonth('{{ $s['key'] }}')" title="ดูข้อมูลเดือน{{ $s['label'] }}"
+                            class="flex-1 h-full flex flex-col justify-end items-center gap-1.5 group cursor-pointer">
+                            <span @class(['text-[10.5px] tabular-nums', 'text-accent font-semibold' => $s['key'] === $selectedMonth, 'text-muted' => $s['key'] !== $selectedMonth])>{{ $s['out'] > 0 ? number_format($s['out'] / 1000, 1).'k' : '' }}</span>
+                            <div @class([
+                                'w-full max-w-[42px] rounded-t-[6px] bg-accent transition-opacity',
+                                'opacity-100' => $s['key'] === $selectedMonth,
+                                'opacity-40 group-hover:opacity-70' => $s['key'] !== $selectedMonth,
+                            ]) style="height:{{ round($s['out'] / $maxOut * 100) }}%"></div>
+                        </button>
+                    @endforeach
+                </div>
+                <div class="flex gap-2 mt-2">
+                    @foreach ($series as $s)
+                        <span wire:key="lbl-{{ $s['key'] }}" @class(['flex-1 text-center text-[11px]', 'text-accent font-semibold' => $s['key'] === $selectedMonth, 'text-muted2' => $s['key'] !== $selectedMonth])>{{ $s['label'] }}</span>
+                    @endforeach
+                </div>
+            @else
+                <div class="flex items-end gap-[3px] h-[196px] border-b border-line overflow-x-auto">
+                    @foreach ($dailySeries as $d)
+                        <div wire:key="daybar-{{ $d['key'] }}" title="{{ \Illuminate\Support\Carbon::parse($d['key'])->format('d/m/Y') }} · {{ number_format($d['out']) }} บาท"
+                            class="flex-1 min-w-[9px] h-full flex flex-col justify-end items-center group">
+                            <div @class(['w-full rounded-t-[3px] transition-opacity', 'bg-accent' => $d['out'] > 0, 'bg-hairline' => $d['out'] == 0, 'opacity-70 group-hover:opacity-100' => $d['out'] > 0])
+                                style="height:{{ $d['out'] > 0 ? round($d['out'] / $maxDaily * 100) : 2 }}%"></div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="flex gap-[3px] mt-2">
+                    @foreach ($dailySeries as $d)
+                        <span wire:key="daylbl-{{ $d['key'] }}" class="flex-1 min-w-[9px] text-center text-[9px] text-muted2">{{ $d['label'] % 5 === 0 || $d['label'] == 1 ? $d['label'] : '' }}</span>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         {{-- Stock value by category --}}
