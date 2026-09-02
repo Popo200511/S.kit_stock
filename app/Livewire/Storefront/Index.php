@@ -48,6 +48,15 @@ class Index extends Component
         $this->perPage = 24;
     }
 
+    /** ล้างตัวกรองทั้งหมด กลับไปดูสินค้าทุกชิ้น — ใช้ตอนค้นหาแล้วไม่พบผลลัพธ์ */
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->categoryId = null;
+        $this->inStockOnly = false;
+        $this->perPage = 24;
+    }
+
     public function loadMore(): void
     {
         $this->perPage += 24;

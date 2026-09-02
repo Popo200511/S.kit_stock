@@ -160,9 +160,48 @@
                     if (entries[0].isIntersecting) { $wire.loadMore(); io.disconnect(); }
                 }, { rootMargin: '300px' });
                 io.observe($el);
-            " class="py-3.5 text-center text-[12px] text-muted2">กำลังโหลดเพิ่มเติม...</div>
+            ">
+                {{-- Skeleton การ์ดสินค้า — แทนที่ข้อความ "กำลังโหลด..." เฉยๆ ให้ดูลื่นไหลกว่า
+                ระหว่างรอสินค้าชุดถัดไปโหลดเข้ามา (infinite scroll) --}}
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 animate-pulse">
+                    @for ($i = 0; $i < 4; $i++)
+                        <div class="bg-surface border border-border rounded-[14px] overflow-hidden">
+                            <div class="aspect-square bg-sunken"></div>
+                            <div class="p-3 flex flex-col gap-2">
+                                <div class="h-3 rounded bg-sunken w-4/5"></div>
+                                <div class="h-3 rounded bg-sunken w-2/5"></div>
+                            </div>
+                        </div>
+                    @endfor
+                </div>
+            </div>
         @endif
     @else
-        <div class="py-16 text-center text-[13.5px] text-muted2">ไม่พบสินค้าที่ค้นหา</div>
+        {{-- Empty state — ให้ทางออกแทนที่จะจบตัน --}}
+        <div class="py-16 flex flex-col items-center gap-4 text-center">
+            <span class="w-16 h-16 rounded-full bg-sunken text-muted3 flex items-center justify-center">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+            </span>
+            <div class="flex flex-col gap-1">
+                <span class="text-[14px] font-medium">ไม่พบสินค้าที่ค้นหา</span>
+                <span class="text-[12.5px] text-muted2">ลองค้นหาด้วยคำอื่น หรือดูหมวดหมู่ยอดนิยมด้านล่าง</span>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2">
+                <button wire:click="clearFilters" class="px-4 py-2 rounded-lg border border-border4 text-[12.5px] font-medium text-text2 hover:border-accent hover:text-accent">ล้างตัวกรองทั้งหมด</button>
+                @foreach ($categories->take(3) as $cat)
+                    <button wire:click="selectCategory({{ $cat->id }})" class="px-4 py-2 rounded-lg border border-border4 text-[12.5px] font-medium text-text2 hover:border-accent hover:text-accent">{{ $cat->name }}</button>
+                @endforeach
+            </div>
+        </div>
     @endif
+
+    {{-- Back to top --}}
+    <div x-data="{ show: false }" x-init="window.addEventListener('scroll', () => { show = window.scrollY > 500 }, { passive: true })">
+        {{-- ชิดซ้ายแทนขวา — ฝั่งขวามีปุ่มลอย LINE/โทร ของ layout อยู่แล้ว วางซ้อนกันจะทับกัน --}}
+        <button type="button" @click="window.scrollTo({ top: 0, behavior: 'smooth' })" x-show="show" x-cloak x-transition.opacity
+            class="fixed bottom-5 left-5 z-40 w-11 h-11 rounded-full bg-surface border border-border2 shadow-lg flex items-center justify-center text-text2 hover:text-accent hover:border-accent"
+            title="กลับขึ้นบนสุด">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"></path></svg>
+        </button>
+    </div>
 </div>
