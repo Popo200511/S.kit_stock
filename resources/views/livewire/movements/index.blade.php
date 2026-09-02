@@ -432,9 +432,31 @@
                 @endif
 
                 <div class="flex gap-2.5">
-                    <button wire:click="save" class="flex-1 py-2.5 rounded-[10px] bg-accent text-white text-[13.5px] font-medium hover:bg-accent-hover">บันทึก</button>
+                    <button wire:click="askSaveConfirm" class="flex-1 py-2.5 rounded-[10px] bg-accent text-white text-[13.5px] font-medium hover:bg-accent-hover">บันทึก</button>
                     <button wire:click="closeForm" class="px-4.5 py-2.5 rounded-[10px] border border-border4 text-text2 text-[13px] font-medium hover:bg-hairline">ยกเลิก</button>
                 </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Save confirm --}}
+    @if ($showSaveConfirm)
+        <div wire:click="cancelSaveConfirm" class="fixed inset-0 bg-black/45 z-[92] flex items-center justify-center p-4">
+            <div wire:click.stop class="w-full max-w-[380px] bg-surface rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
+                <div class="flex gap-3 items-start">
+                    <span class="w-[34px] h-[34px] shrink-0 rounded-[10px] bg-accent-tint text-accent flex items-center justify-center">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"></path></svg>
+                    </span>
+                    <div class="flex flex-col gap-1 leading-relaxed">
+                        <span class="text-[15px] font-semibold">ยืนยันบันทึกเอกสาร{{ $form['type'] === 'in' ? 'รับเข้า' : 'เบิกออก' }}?</span>
+                        <span class="text-[12.5px] text-muted">{{ count($formLines) }} รายการ · มูลค่ารวม {{ number_format($this->formTotal()) }} บาท</span>
+                        <span class="text-[12.5px] text-warn">ระบบจะปรับจำนวนสต็อกสินค้าทันทีหลังบันทึก</span>
+                    </div>
+                </div>
+                <div class="flex gap-2.5">
+                    <button wire:click="cancelSaveConfirm" class="flex-1 py-2.5 rounded-[10px] border border-border4 text-text2 text-[13px] font-medium hover:bg-sunken">ยกเลิก</button>
+                    <button wire:click="save" class="flex-1 py-2.5 rounded-[10px] bg-accent text-white text-[13px] font-medium hover:bg-accent-hover">ยืนยันบันทึก</button>
                 </div>
             </div>
         </div>

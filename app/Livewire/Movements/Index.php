@@ -35,6 +35,8 @@ class Index extends Component
     // Create form
     public bool $showForm = false;
 
+    public bool $showSaveConfirm = false;
+
     public array $form = ['type' => 'in', 'date' => '', 'party' => '', 'note' => ''];
 
     public array $formLines = [];
@@ -477,7 +479,11 @@ class Index extends Component
         return collect($this->formLines)->sum('line_total');
     }
 
-    public function save(StockService $stock): void
+    /**
+     * กดปุ่ม "บันทึก" ครั้งแรก — ตรวจข้อมูลเบื้องต้นเหมือน save() เป๊ะ แต่ยังไม่บันทึกจริง
+     * แค่เปิด popup ให้ยืนยันอีกที กันกดพลาด/กดซ้ำโดยไม่ตั้งใจ
+     */
+    public function askSaveConfirm(): void
     {
         abort_unless(auth()->user()->can('stock_movements'), 403);
 
@@ -485,6 +491,35 @@ class Index extends Component
         if ($this->lineProductId !== '' && (float) $this->lineQty > 0) {
             $this->addLine();
         }
+
+        if (empty($this->formLines)) {
+            $this->formError = 'เพิ่มอย่างน้อย 1 รายการก่อนบันทึก';
+
+            return;
+        }
+
+        if ($this->form['date'] === '') {
+            $this->formError = 'เลือกวันที่';
+
+            return;
+        }
+
+        $this->formError = null;
+        $this->showSaveConfirm = true;
+    }
+
+    public function cancelSaveConfirm(): void
+    {
+        $this->showSaveConfirm = false;
+    }
+
+    public function save(StockService $stock): void
+    {
+        abort_unless(auth()->user()->can('stock_movements'), 403);
+
+        // ปิด popup ยืนยันเสมอไม่ว่าผลจะสำเร็จหรือ error — ถ้า error จะได้เห็นข้อความ error
+        // บนฟอร์มด้านหลังที่ popup นี้บังอยู่
+        $this->showSaveConfirm = false;
 
         if (empty($this->formLines)) {
             $this->formError = 'เพิ่มอย่างน้อย 1 รายการก่อนบันทึก';
