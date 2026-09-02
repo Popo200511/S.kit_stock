@@ -120,7 +120,7 @@
                     <div class="grid grid-cols-2 gap-2.5">
                         <div class="flex flex-col gap-1.5">
                             <label class="text-[12.5px] font-medium text-text2">วันที่</label>
-                            <input type="date" wire:model="receiptForm.date" class="border border-border3 rounded-[10px] px-3 py-2.5 text-[13.5px] focus:border-accent focus:ring-0 focus:outline-none">
+                            <input type="date" lang="en-GB" wire:model="receiptForm.date" class="border border-border3 rounded-[10px] px-3 py-2.5 text-[13.5px] focus:border-accent focus:ring-0 focus:outline-none">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-[12.5px] font-medium text-text2">ผู้จำหน่าย (ถ้ามี)</label>
