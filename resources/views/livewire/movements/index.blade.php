@@ -2,27 +2,56 @@
 
     {{-- KPIs --}}
     @php
-        $mvBrowseSeed = $selectedMonth ?? now()->format('Y-m');
-        $mvBrowseInitYear = (int) substr($mvBrowseSeed, 0, 4);
-        $mvBrowseInitMonth = (int) substr($mvBrowseSeed, 5, 2);
+        $mvBrowseSeed = $period === 'range' ? $rangeStart : ($selectedMonth ?? now()->format('Y-m'));
+        $mvBrowseInitYear = $period === 'range' ? (int) substr($rangeStart, 0, 4) : (int) substr($mvBrowseSeed, 0, 4);
+        $mvBrowseInitMonth = $period === 'range' ? (int) substr($rangeStart, 5, 2) : (int) substr($mvBrowseSeed, 5, 2);
     @endphp
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         <div class="bg-surface border border-border rounded-[12px] p-3 shadow-sm flex flex-col gap-1" x-data="{
                 monthOpen: false,
                 browseYear: {{ $mvBrowseInitYear }},
                 browseMonth: {{ $mvBrowseInitMonth }},
+                pendingStart: @js($rangeStart),
+                pendingEnd: @js($rangeEnd),
                 monthNames: ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
+                daysInMonthFor(y, m) { return new Date(y, m, 0).getDate(); },
+                leadingBlanksFor(y, m) { return new Date(y, m - 1, 1).getDay(); },
+                get rightMonth() { return this.browseMonth === 12 ? 1 : this.browseMonth + 1; },
+                get rightYear() { return this.browseMonth === 12 ? this.browseYear + 1 : this.browseYear; },
+                get canGoNextBrowseMonth() { return this.browseYear < {{ now()->year }} || (this.browseYear === {{ now()->year }} && this.browseMonth < {{ now()->month }}); },
+                prevBrowseMonth() { this.browseMonth--; if (this.browseMonth < 1) { this.browseMonth = 12; this.browseYear--; } },
+                nextBrowseMonth() { if (this.canGoNextBrowseMonth) { this.browseMonth++; if (this.browseMonth > 12) { this.browseMonth = 1; this.browseYear++; } } },
+                selectRangeDay(dateStr) {
+                    if (! this.pendingStart || (this.pendingStart && this.pendingEnd)) {
+                        this.pendingStart = dateStr;
+                        this.pendingEnd = null;
+                    } else if (dateStr < this.pendingStart) {
+                        this.pendingEnd = this.pendingStart;
+                        this.pendingStart = dateStr;
+                        this.$wire.selectRange(this.pendingStart, this.pendingEnd);
+                    } else {
+                        this.pendingEnd = dateStr;
+                        this.$wire.selectRange(this.pendingStart, this.pendingEnd);
+                    }
+                },
                 openPicker() {
+                    // อ่านจาก $wire ตรงๆ (ไม่ใช้ค่าที่ฝังไว้ตอน paint แรก) — เพราะ x-data นี้
+                    // Livewire/Alpine ไม่ re-init ให้ตอน morph ทุกครั้ง ค่าที่ฝังไว้ตั้งแต่แรก
+                    // จะเก่าไปทันทีหลังเลือกครั้งแรก
                     this.monthOpen = !this.monthOpen;
-                    const sm = this.$wire.selectedMonth;
-                    const now = new Date();
-                    if (sm) {
-                        const [y, m] = sm.split('-');
+                    if (this.$wire.period === 'range') {
+                        this.pendingStart = this.$wire.rangeStart;
+                        this.pendingEnd = this.$wire.rangeEnd;
+                        const [y, m] = this.$wire.rangeStart.split('-');
                         this.browseYear = parseInt(y);
                         this.browseMonth = parseInt(m);
                     } else {
-                        this.browseYear = now.getFullYear();
-                        this.browseMonth = now.getMonth() + 1;
+                        this.pendingStart = null;
+                        this.pendingEnd = null;
+                        const sm = this.$wire.selectedMonth || this.$wire.rangeStart;
+                        const [y, m] = sm.split('-');
+                        this.browseYear = parseInt(y);
+                        this.browseMonth = parseInt(m);
                     }
                 },
             }">
@@ -35,33 +64,117 @@
                     <span></span>
                 @endif
                 <div class="relative">
-                    <button @click="openPicker()" title="เลือกเดือน" class="w-6 h-6 rounded-lg flex items-center justify-center text-muted2 hover:bg-sunken hover:text-accent">
+                    <button @click="openPicker()" title="เลือกวันที่" class="w-6 h-6 rounded-lg flex items-center justify-center text-muted2 hover:bg-sunken hover:text-accent">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
                     </button>
                     <div x-show="monthOpen" @click.outside="monthOpen = false" x-cloak
-                        class="absolute top-full right-0 mt-2 z-30 bg-surface border border-border2 rounded-xl shadow-lg p-3 flex flex-col gap-2 w-[218px]">
+                        class="absolute top-full right-0 mt-2 z-30 bg-surface border border-border2 rounded-xl shadow-lg p-3 flex flex-col gap-2 w-max">
                         <button wire:click="setAllTime" @click="monthOpen = false"
-                            class="w-full py-1.5 rounded-lg text-[12px] font-medium {{ $selectedMonth === null ? 'bg-accent text-white' : 'border border-border4 text-text3 hover:bg-sunken' }}">ทั้งหมด (ทุกช่วงเวลา)</button>
-                        <div class="flex items-center justify-between">
-                            <button @click="browseYear--" title="ปีก่อนหน้า" class="w-7 h-7 rounded-lg flex items-center justify-center text-text3 hover:bg-sunken hover:text-accent">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
-                            </button>
-                            <span class="text-[13px] font-semibold tabular-nums" x-text="browseYear + 543"></span>
-                            <button @click="browseYear++" :disabled="browseYear >= {{ now()->year }}" title="ปีถัดไป"
-                                class="w-7 h-7 rounded-lg flex items-center justify-center text-text3 hover:bg-sunken hover:text-accent disabled:opacity-30 disabled:pointer-events-none">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
-                            </button>
+                            class="w-full py-1.5 rounded-lg text-[12px] font-medium {{ $period === 'all' ? 'bg-accent text-white' : 'border border-border4 text-text3 hover:bg-sunken' }}">ทั้งหมด (ทุกช่วงเวลา)</button>
+                        <div class="flex gap-1 bg-chip p-[3px] rounded-[9px]">
+                            <button wire:click="setPeriod('range')" class="flex-1 px-3 py-1.5 rounded-[7px] text-[12px] font-medium {{ $period === 'range' ? 'bg-surface shadow-sm' : 'text-muted2' }}">ช่วงวันที่</button>
+                            <button wire:click="setPeriod('month')" class="flex-1 px-3 py-1.5 rounded-[7px] text-[12px] font-medium {{ $period === 'month' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายเดือน</button>
+                            <button wire:click="setPeriod('year')" class="flex-1 px-3 py-1.5 rounded-[7px] text-[12px] font-medium {{ $period === 'year' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รายปี</button>
                         </div>
-                        <div class="grid grid-cols-4 gap-1.5">
-                            @foreach (['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'] as $i => $mLabel)
-                                @php $mNum = $i + 1; @endphp
-                                <button
-                                    @click="$wire.selectMonth(browseYear + '-' + String({{ $mNum }}).padStart(2, '0'))"
-                                    :disabled="browseYear > {{ now()->year }} || (browseYear === {{ now()->year }} && {{ $mNum }} > {{ now()->month }})"
-                                    :class="(browseYear + '-' + String({{ $mNum }}).padStart(2, '0')) === '{{ $selectedMonth }}' ? 'bg-accent text-white' : 'text-text3 hover:bg-sunken'"
-                                    class="py-1.5 rounded-lg text-[12px] font-medium transition-colors disabled:opacity-25 disabled:pointer-events-none"
-                                >{{ $mLabel }}</button>
-                            @endforeach
+                        <div class="flex items-center gap-2">
+                            @if ($period === 'range')
+                                @php $dayBtnClasses = 'w-7 h-7 text-[12px] font-medium transition-colors disabled:opacity-25 disabled:pointer-events-none'; @endphp
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center justify-between px-1">
+                                        <button @click="prevBrowseMonth()" title="เดือนก่อนหน้า" class="w-7 h-7 rounded-lg flex items-center justify-center text-text3 hover:bg-sunken hover:text-accent">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+                                        </button>
+                                        <span class="text-[11.5px] text-muted3">ลากเลือกวันเริ่ม-สิ้นสุด</span>
+                                        <button @click="nextBrowseMonth()" :disabled="! canGoNextBrowseMonth" title="เดือนถัดไป"
+                                            class="w-7 h-7 rounded-lg flex items-center justify-center text-text3 hover:bg-sunken hover:text-accent disabled:opacity-30 disabled:pointer-events-none">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        {{-- Left calendar --}}
+                                        <div class="flex flex-col gap-2 w-[218px]">
+                                            <span class="text-[13px] font-semibold tabular-nums text-center" x-text="monthNames[browseMonth - 1] + ' ' + (browseYear + 543)"></span>
+                                            <div class="grid grid-cols-7 gap-1 text-center">
+                                                @foreach (['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'] as $wd)
+                                                    <span class="text-[10.5px] text-muted3 font-medium py-1">{{ $wd }}</span>
+                                                @endforeach
+                                                <template x-for="n in leadingBlanksFor(browseYear, browseMonth)" :key="'lb-' + n"><span></span></template>
+                                                <template x-for="d in daysInMonthFor(browseYear, browseMonth)" :key="'l-' + d">
+                                                    <button
+                                                        @click="selectRangeDay(browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0'))"
+                                                        :disabled="(browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) > '{{ now()->toDateString() }}'"
+                                                        :class="{
+                                                            'bg-accent text-white rounded-full': ['pendingStart','pendingEnd'].some(k => (browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) === (k === 'pendingStart' ? pendingStart : pendingEnd)),
+                                                            'bg-accent-tint text-accent-ink': pendingStart && pendingEnd && (browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) > pendingStart && (browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) < pendingEnd,
+                                                            'text-text3 hover:bg-sunken': ! (pendingStart === (browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) || pendingEnd === (browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) || (pendingStart && pendingEnd && (browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) > pendingStart && (browseYear + '-' + String(browseMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) < pendingEnd)),
+                                                        }"
+                                                        class="{{ $dayBtnClasses }}"
+                                                        x-text="d"
+                                                    ></button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        {{-- Right calendar --}}
+                                        <div class="flex flex-col gap-2 w-[218px]">
+                                            <span class="text-[13px] font-semibold tabular-nums text-center" x-text="monthNames[rightMonth - 1] + ' ' + (rightYear + 543)"></span>
+                                            <div class="grid grid-cols-7 gap-1 text-center">
+                                                @foreach (['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'] as $wd)
+                                                    <span class="text-[10.5px] text-muted3 font-medium py-1">{{ $wd }}</span>
+                                                @endforeach
+                                                <template x-for="n in leadingBlanksFor(rightYear, rightMonth)" :key="'rb-' + n"><span></span></template>
+                                                <template x-for="d in daysInMonthFor(rightYear, rightMonth)" :key="'r-' + d">
+                                                    <button
+                                                        @click="selectRangeDay(rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0'))"
+                                                        :disabled="(rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) > '{{ now()->toDateString() }}'"
+                                                        :class="{
+                                                            'bg-accent text-white rounded-full': ['pendingStart','pendingEnd'].some(k => (rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) === (k === 'pendingStart' ? pendingStart : pendingEnd)),
+                                                            'bg-accent-tint text-accent-ink': pendingStart && pendingEnd && (rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) > pendingStart && (rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) < pendingEnd,
+                                                            'text-text3 hover:bg-sunken': ! (pendingStart === (rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) || pendingEnd === (rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) || (pendingStart && pendingEnd && (rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) > pendingStart && (rightYear + '-' + String(rightMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0')) < pendingEnd)),
+                                                        }"
+                                                        class="{{ $dayBtnClasses }}"
+                                                        x-text="d"
+                                                    ></button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @elseif ($period === 'year')
+                                <div class="flex items-center gap-2 w-[218px]">
+                                    <button wire:click="previousYear" title="ปีก่อนหน้า" class="w-8 h-8 shrink-0 rounded-lg border border-border4 flex items-center justify-center text-text3 hover:border-accent hover:text-accent">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+                                    </button>
+                                    <span class="flex-1 text-center text-[13px] font-medium tabular-nums">{{ $selectedYear + 543 }}</span>
+                                    <button wire:click="nextYear" title="ปีถัดไป" @disabled($isCurrentPeriod)
+                                        class="w-8 h-8 shrink-0 rounded-lg border border-border4 flex items-center justify-center text-text3 hover:border-accent hover:text-accent disabled:opacity-30 disabled:pointer-events-none">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+                                    </button>
+                                </div>
+                            @else
+                                <div class="flex flex-col gap-2 w-[218px]">
+                                    <div class="flex items-center justify-between">
+                                        <button @click="browseYear--" title="ปีก่อนหน้า" class="w-7 h-7 rounded-lg flex items-center justify-center text-text3 hover:bg-sunken hover:text-accent">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+                                        </button>
+                                        <span class="text-[13px] font-semibold tabular-nums" x-text="browseYear + 543"></span>
+                                        <button @click="browseYear++" :disabled="browseYear >= {{ now()->year }}" title="ปีถัดไป"
+                                            class="w-7 h-7 rounded-lg flex items-center justify-center text-text3 hover:bg-sunken hover:text-accent disabled:opacity-30 disabled:pointer-events-none">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1.5">
+                                        @foreach (['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'] as $i => $mLabel)
+                                            @php $mNum = $i + 1; @endphp
+                                            <button
+                                                @click="$wire.selectMonth(browseYear + '-' + String({{ $mNum }}).padStart(2, '0'))"
+                                                :disabled="browseYear > {{ now()->year }} || (browseYear === {{ now()->year }} && {{ $mNum }} > {{ now()->month }})"
+                                                :class="(browseYear + '-' + String({{ $mNum }}).padStart(2, '0')) === '{{ $selectedMonth }}' && '{{ $period }}' === 'month' ? 'bg-accent text-white' : 'text-text3 hover:bg-sunken'"
+                                                class="py-1.5 rounded-lg text-[12px] font-medium transition-colors disabled:opacity-25 disabled:pointer-events-none"
+                                            >{{ $mLabel }}</button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

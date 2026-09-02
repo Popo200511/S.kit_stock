@@ -94,10 +94,23 @@ class Index extends Component
     /** 'Y-m', or null for "ทั้งหมด" (no month scoping — the list's original unbounded view). */
     public ?string $selectedMonth = null;
 
+    /** 'all' | 'range' | 'month' | 'year' — which range the KPIs and document list are scoped to. */
+    public string $period = 'month';
+
+    public int $selectedYear;
+
+    // Custom date range (period === 'range') — a single day is just start === end.
+    public string $rangeStart;
+
+    public string $rangeEnd;
+
     public function mount(): void
     {
         $this->form['date'] = now()->toDateString();
         $this->selectedMonth = now()->format('Y-m');
+        $this->selectedYear = now()->year;
+        $this->rangeStart = now()->toDateString();
+        $this->rangeEnd = now()->toDateString();
 
         $highlightId = request()->query('doc');
         if ($highlightId) {
@@ -177,14 +190,55 @@ class Index extends Component
     public function selectMonth(string $month): void
     {
         $this->selectedMonth = $month;
+        $this->period = 'month';
         $this->resetPage();
         $this->tablePerPage = 20;
         $this->cardPerPage = 12;
     }
 
+    public function selectRange(string $start, string $end): void
+    {
+        // Normalize order defensively — the calendar UI already sorts them before calling
+        // this, but a server-side call shouldn't trust that.
+        $this->rangeStart = min($start, $end);
+        $this->rangeEnd = max($start, $end);
+        $this->period = 'range';
+        $this->resetPage();
+        $this->tablePerPage = 20;
+        $this->cardPerPage = 12;
+    }
+
+    public function setPeriod(string $period): void
+    {
+        $this->period = in_array($period, ['range', 'month', 'year'], true) ? $period : 'month';
+        $this->resetPage();
+        $this->tablePerPage = 20;
+        $this->cardPerPage = 12;
+    }
+
+    public function selectYear(int $year): void
+    {
+        $this->selectedYear = $year;
+        $this->period = 'year';
+        $this->resetPage();
+        $this->tablePerPage = 20;
+        $this->cardPerPage = 12;
+    }
+
+    public function previousYear(): void
+    {
+        $this->selectYear($this->selectedYear - 1);
+    }
+
+    public function nextYear(): void
+    {
+        $this->selectYear($this->selectedYear + 1);
+    }
+
     public function setAllTime(): void
     {
         $this->selectedMonth = null;
+        $this->period = 'all';
         $this->resetPage();
         $this->tablePerPage = 20;
         $this->cardPerPage = 12;
@@ -224,9 +278,27 @@ class Index extends Component
         $this->cardPerPage = 12;
     }
 
-    /** @return array{0: \Illuminate\Support\Carbon, 1: \Illuminate\Support\Carbon}|null null when $selectedMonth is null ("ทั้งหมด"). */
-    protected function monthDateRange(): ?array
+    /**
+     * ช่วงวันที่ที่ใช้กรองเอกสารทั้งหน้าตอนนี้ — null คือ "ทั้งหมด" (ไม่กรองเลย)
+     *
+     * @return array{0: \Illuminate\Support\Carbon, 1: \Illuminate\Support\Carbon}|null
+     */
+    protected function activeDateRange(): ?array
     {
+        if ($this->period === 'all') {
+            return null;
+        }
+
+        if ($this->period === 'range') {
+            return [Carbon::parse($this->rangeStart)->startOfDay(), Carbon::parse($this->rangeEnd)->endOfDay()];
+        }
+
+        if ($this->period === 'year') {
+            $yearStart = Carbon::create($this->selectedYear, 1, 1)->startOfDay();
+
+            return [$yearStart, (clone $yearStart)->endOfYear()];
+        }
+
         if ($this->selectedMonth === null) {
             return null;
         }
@@ -236,12 +308,40 @@ class Index extends Component
         return [$start, (clone $start)->endOfMonth()];
     }
 
+    /** ช่วงก่อนหน้าที่มีความยาวเท่ากัน สำหรับเทียบเปอร์เซ็นต์เปลี่ยนแปลง — null ถ้าตอนนี้เป็น "ทั้งหมด" (ไม่มีช่วงให้เทียบ) */
+    protected function previousActiveDateRange(): ?array
+    {
+        if ($this->period === 'range') {
+            $start = Carbon::parse($this->rangeStart)->startOfDay();
+            $lengthDays = (int) round($start->diffInDays(Carbon::parse($this->rangeEnd)->startOfDay())) + 1;
+
+            $prevEnd = $start->copy()->subDay()->endOfDay();
+            $prevStart = $prevEnd->copy()->subDays($lengthDays - 1)->startOfDay();
+
+            return [$prevStart, $prevEnd];
+        }
+
+        if ($this->period === 'year') {
+            $prevStart = Carbon::create($this->selectedYear - 1, 1, 1)->startOfDay();
+
+            return [$prevStart, (clone $prevStart)->endOfYear()];
+        }
+
+        if ($this->period === 'all' || $this->selectedMonth === null) {
+            return null;
+        }
+
+        $start = Carbon::createFromFormat('Y-m', $this->selectedMonth)->startOfMonth()->subMonthNoOverflow();
+
+        return [$start, (clone $start)->endOfMonth()];
+    }
+
     protected function columnOptions(string $column): array
     {
         // Scoped to the active tab and month, same as baseQuery() — otherwise the checkbox
         // list offers doc numbers/products/etc. from OUTSIDE the current filter (the other
         // tab, or a different month), which can never match a row in the currently-filtered table.
-        $monthRange = $this->monthDateRange();
+        $monthRange = $this->activeDateRange();
         $scopedMovements = fn () => StockMovement::query()
             ->when($this->typeTab !== 'all', fn ($q) => $q->where('type', $this->typeTab))
             ->when($monthRange, fn ($q) => $q->whereBetween('date', $monthRange));
@@ -838,7 +938,7 @@ class Index extends Component
 
     protected function baseQuery()
     {
-        $monthRange = $this->monthDateRange();
+        $monthRange = $this->activeDateRange();
 
         $query = StockMovementLine::query()
             ->with(['stockMovement.user'])
@@ -1109,8 +1209,8 @@ class Index extends Component
         $this->closeImportModal();
     }
 
-    /** "+12%" / "-8%" vs the previous month, or null when there's nothing to compare against. */
-    protected function pctDelta(float $current, float $previous): ?array
+    /** "+12%" / "-8%" vs the previous period, or null when there's nothing to compare against. */
+    protected function pctDelta(float $current, float $previous, string $suffix = 'จากเดือนก่อน'): ?array
     {
         if ($previous == 0.0) {
             return null;
@@ -1118,7 +1218,7 @@ class Index extends Component
 
         $pct = round(($current - $previous) / abs($previous) * 100);
 
-        return ['text' => ($pct >= 0 ? '+' : '').$pct.'% จากเดือนก่อน', 'tone' => $pct >= 0 ? 'accent' : 'danger'];
+        return ['text' => ($pct >= 0 ? '+' : '').$pct.'% '.$suffix, 'tone' => $pct >= 0 ? 'accent' : 'danger'];
     }
 
     public function render()
@@ -1127,25 +1227,40 @@ class Index extends Component
             ? $this->baseQuery()->latest('id')->paginate($this->cardPerPage, ['*'], 'page', 1)
             : $this->baseQuery()->latest('id')->paginate($this->tablePerPage, ['*'], 'page', 1);
 
-        $monthRange = $this->monthDateRange();
+        $monthRange = $this->activeDateRange();
         if ($monthRange) {
-            [$monthStart, $monthEnd] = $monthRange;
-            $monthLabel = $monthStart->translatedFormat('F Y');
+            [$periodStart, $periodEnd] = $monthRange;
+            $periodLabel = match ($this->period) {
+                'range' => $periodStart->isSameDay($periodEnd)
+                    ? $periodStart->translatedFormat('d F Y')
+                    : ($periodStart->year === $periodEnd->year
+                        ? $periodStart->translatedFormat('j M').' - '.$periodEnd->translatedFormat('j M').' '.($periodEnd->year + 543)
+                        : $periodStart->translatedFormat('j M Y').' - '.$periodEnd->translatedFormat('j M Y')),
+                'year' => 'ปี '.($this->selectedYear + 543),
+                default => $periodStart->translatedFormat('F Y'),
+            };
+            $deltaSuffix = match ($this->period) {
+                'range' => 'จากช่วงก่อนหน้า',
+                'year' => 'จากปีก่อน',
+                default => 'จากเดือนก่อน',
+            };
 
-            $inValue = (float) StockMovement::where('type', 'in')->whereBetween('date', [$monthStart, $monthEnd])->sum('total');
-            $outValue = (float) StockMovement::where('type', 'out')->whereBetween('date', [$monthStart, $monthEnd])->sum('total');
-            $docCount = StockMovement::whereBetween('date', [$monthStart, $monthEnd])->count();
+            $inValue = (float) StockMovement::where('type', 'in')->whereBetween('date', [$periodStart, $periodEnd])->sum('total');
+            $outValue = (float) StockMovement::where('type', 'out')->whereBetween('date', [$periodStart, $periodEnd])->sum('total');
+            $docCount = StockMovement::whereBetween('date', [$periodStart, $periodEnd])->count();
 
-            $prevStart = $monthStart->copy()->subMonthNoOverflow();
-            $prevEnd = (clone $prevStart)->endOfMonth();
-            $prevIn = (float) StockMovement::where('type', 'in')->whereBetween('date', [$prevStart, $prevEnd])->sum('total');
-            $prevOut = (float) StockMovement::where('type', 'out')->whereBetween('date', [$prevStart, $prevEnd])->sum('total');
-            $prevDocCount = StockMovement::whereBetween('date', [$prevStart, $prevEnd])->count();
+            [$prevIn, $prevOut, $prevDocCount] = [0.0, 0.0, 0];
+            if ($prevRange = $this->previousActiveDateRange()) {
+                [$prevStart, $prevEnd] = $prevRange;
+                $prevIn = (float) StockMovement::where('type', 'in')->whereBetween('date', [$prevStart, $prevEnd])->sum('total');
+                $prevOut = (float) StockMovement::where('type', 'out')->whereBetween('date', [$prevStart, $prevEnd])->sum('total');
+                $prevDocCount = StockMovement::whereBetween('date', [$prevStart, $prevEnd])->count();
+            }
 
             $kpis = [
-                ['label' => 'มูลค่ารับเข้า · '.$monthLabel, 'value' => number_format($inValue).' บาท', 'delta' => $this->pctDelta($inValue, $prevIn)],
-                ['label' => 'มูลค่าเบิกออก · '.$monthLabel, 'value' => number_format($outValue).' บาท', 'delta' => $this->pctDelta($outValue, $prevOut)],
-                ['label' => 'จำนวนเอกสาร · '.$monthLabel, 'value' => number_format($docCount), 'delta' => $this->pctDelta($docCount, $prevDocCount)],
+                ['label' => 'มูลค่ารับเข้า · '.$periodLabel, 'value' => number_format($inValue).' บาท', 'delta' => $this->pctDelta($inValue, $prevIn, $deltaSuffix)],
+                ['label' => 'มูลค่าเบิกออก · '.$periodLabel, 'value' => number_format($outValue).' บาท', 'delta' => $this->pctDelta($outValue, $prevOut, $deltaSuffix)],
+                ['label' => 'จำนวนเอกสาร · '.$periodLabel, 'value' => number_format($docCount), 'delta' => $this->pctDelta($docCount, $prevDocCount, $deltaSuffix)],
             ];
         } else {
             $kpis = [
@@ -1172,10 +1287,18 @@ class Index extends Component
                 })->values()->all();
         }
 
+        $isCurrentPeriod = match ($this->period) {
+            'range' => $this->rangeStart === now()->toDateString() && $this->rangeEnd === now()->toDateString(),
+            'year' => $this->selectedYear === now()->year,
+            'all' => true,
+            default => $this->selectedMonth === now()->format('Y-m'),
+        };
+
         return view('livewire.movements.index', [
             'lines' => $lines,
             'hasMoreRows' => $lines->hasMorePages(),
             'kpis' => $kpis,
+            'isCurrentPeriod' => $isCurrentPeriod,
             'products' => $products,
             'productOptions' => $products->map(fn ($p) => ['value' => (string) $p->id, 'label' => $p->name])->values()->all(),
             'lineProduct' => $lineProduct,
