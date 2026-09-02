@@ -3,7 +3,6 @@
 namespace App\Livewire\Storefront;
 
 use App\Models\Product;
-use App\Models\ProductVariant;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -30,28 +29,18 @@ class Show extends Component
             ->select(['id', 'name', 'size', 'description', 'category_id', 'photo_path', 'price'])
             ->selectRaw('(stock > 0) as in_stock')
             ->with('category:id,name')
-            ->with(['variants' => fn ($q) => $q->where('active', true)->orderBy('sort_order')
-                ->select(['id', 'product_id', 'label', 'unit_qty', 'price'])])
             ->findOrFail($this->productId);
 
-        // Exact stock is only ever used here, server-side, to derive a per-size boolean —
-        // it never reaches the view/props (which only ever gets true/false per size),
-        // same discipline as the plain (stock > 0) boolean above for products with no sizes.
-        $baseStock = (float) Product::where('id', $this->productId)->value('stock');
-
-        $sizes = $product->variants->isNotEmpty()
-            ? $product->variants->map(fn ($v) => [
-                'id' => $v->id,
-                'label' => $v->label,
-                'price' => (float) $v->price,
-                'in_stock' => $baseStock >= (float) $v->unit_qty,
-            ])->values()
-            : collect([[
-                'id' => 0,
-                'label' => null,
-                'price' => (float) $product->price,
-                'in_stock' => (bool) $product->in_stock,
-            ]]);
+        // ตามที่ตกลงกับลูกค้า — หน้าร้านออนไลน์ไม่โชว์ตัวเลือก "ขนาดที่แบ่งขาย" (variants) แล้ว
+        // ไม่ว่าสินค้าตัวนั้นจะตั้งค่าไว้กี่ขนาดก็ตาม โชว์แค่ราคากระสอบ/ราคาเต็มของสินค้าเสมอ —
+        // ข้อมูล variants ในระบบยังอยู่ครบเหมือนเดิม (หน้าแอดมิน/รับเข้า-เบิกออกยังใช้ได้ปกติ)
+        // แค่ไม่เอามาแสดงตรงนี้เท่านั้น
+        $sizes = collect([[
+            'id' => 0,
+            'label' => null,
+            'price' => (float) $product->price,
+            'in_stock' => (bool) $product->in_stock,
+        ]]);
 
         $minPrice = $sizes->min('price');
         $priceLabel = $sizes->count() > 1
@@ -67,12 +56,6 @@ class Show extends Component
                 ->whereKeyNot($product->id)
                 ->select(['id', 'name', 'size', 'category_id', 'photo_path', 'price'])
                 ->selectRaw('(stock > 0) as in_stock')
-                ->withCount(['variants' => fn ($q) => $q->where('active', true)])
-                ->addSelect(['min_variant_price' => ProductVariant::query()
-                    ->selectRaw('MIN(price)')
-                    ->whereColumn('product_id', 'products.id')
-                    ->where('active', true),
-                ])
                 ->inRandomOrder()
                 ->limit(8)
                 ->get()

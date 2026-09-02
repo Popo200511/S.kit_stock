@@ -143,12 +143,7 @@
                         @endif
                         <div class="flex items-center justify-between gap-2 mt-1">
                             <span class="text-[14px] font-semibold text-accent-ink">
-                                @if ($product->variants_count > 1)
-                                    เริ่มต้น {{ number_format((float) $product->min_variant_price, 2) }}
-                                @else
-                                    {{ number_format((float) $product->price, 2) }}
-                                @endif
-                                บาท
+                                {{ number_format((float) $product->price, 2) }} บาท
                             </span>
                             @unless ($product->in_stock)
                                 <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-danger-tint text-danger whitespace-nowrap">หมดชั่วคราว</span>

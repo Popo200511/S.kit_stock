@@ -4,7 +4,6 @@ namespace App\Livewire\Storefront;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -66,16 +65,6 @@ class Index extends Component
             ->where('active', true)
             ->select(['id', 'name', 'size', 'category_id', 'photo_path', 'price'])
             ->selectRaw('(stock > 0) as in_stock')
-            ->withCount(['variants' => fn ($q) => $q->where('active', true)])
-            ->addSelect(['min_variant_price' => ProductVariant::query()
-                ->selectRaw('MIN(price)')
-                ->whereColumn('product_id', 'products.id')
-                ->where('active', true),
-            ])
-            // สำหรับเรียงตามราคา — ใช้ราคาต่ำสุดของขนาดถ้ามีหลายขนาด ไม่งั้นใช้ราคาสินค้าเอง
-            // (ตรงกับตัวเลขราคาที่โชว์บนการ์ดจริง) ทำเป็น subquery แยกเพราะ MySQL อ้างอิง
-            // select-alias อื่นในนิพจน์ select ตัวเองไม่ได้
-            ->selectRaw('COALESCE((SELECT MIN(price) FROM product_variants WHERE product_variants.product_id = products.id AND product_variants.active = 1), products.price) as effective_price')
             ->with('category:id,name')
             ->when($this->search !== '', fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->when($this->categoryId, fn ($q) => $q->where('category_id', $this->categoryId))
@@ -86,8 +75,10 @@ class Index extends Component
     {
         $query = $this->baseQuery();
         match ($this->sort) {
-            'price_asc' => $query->orderBy('effective_price', 'asc'),
-            'price_desc' => $query->orderBy('effective_price', 'desc'),
+            // ตามที่ตกลงกับลูกค้า — หน้าร้านไม่โชว์ราคาตามขนาดที่แบ่งขาย (variants) แล้ว
+            // เรียงตามราคาสินค้าหลัก (ราคากระสอบ) ตรงๆ แทน
+            'price_asc' => $query->orderBy('price', 'asc'),
+            'price_desc' => $query->orderBy('price', 'desc'),
             default => $query->orderBy('name'),
         };
         $products = $query->paginate($this->perPage, ['*'], 'page', 1);
