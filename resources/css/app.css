@@ -132,14 +132,11 @@
     --bar-neutral: #3f4a54;
 }
 
-/* ---- Login page uses its own fixed pink theme regardless of dark mode (prototype lines 242-346) ----
-   หน้าร้านค้าออนไลน์ (storefront) ก็ใช้โทนสีชมพูชุดเดียวกันนี้ด้วย (ตั้งใจแยกจาก --accent สีเขียว
-   ที่แอปแอดมินใช้อยู่ — เปลี่ยนแบรนด์ฝั่งลูกค้าได้โดยไม่กระทบหน้าจอทำงานภายในเลย) */
+/* ---- Login page uses its own fixed pink theme regardless of dark mode (prototype lines 242-346) ---- */
 :root {
     --login-accent: #d9566d;
     --login-accent-hover: #c34459;
     --login-accent-tint: #fdeef1;
-    --login-accent-ink: #a8324a;
 }
 
 @theme {
@@ -213,7 +210,6 @@
     --color-login-accent: var(--login-accent);
     --color-login-accent-hover: var(--login-accent-hover);
     --color-login-accent-tint: var(--login-accent-tint);
-    --color-login-accent-ink: var(--login-accent-ink);
 }
 
 html,
