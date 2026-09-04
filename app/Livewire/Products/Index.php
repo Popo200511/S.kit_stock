@@ -360,9 +360,29 @@ class Index extends Component
             return (string) ($this->form['category_id'] ?? '');
         }
 
-        $category = Category::firstOrCreate(['name' => $name]);
+        $category = $this->findOrCreateCategory($name);
 
         return (string) $category->id;
+    }
+
+    /**
+     * Category::firstOrCreate() alone breaks here: Category uses SoftDeletes, so
+     * its unique index still blocks re-inserting a name that belongs to a
+     * soft-deleted row — firstOrCreate()'s own SELECT excludes trashed rows by
+     * default, so it tries to INSERT and hits a UniqueConstraintViolationException.
+     * Look through trashed rows too and restore instead, same as how Product
+     * rows are matched by SKU (including trashed ones) a few lines below.
+     */
+    private function findOrCreateCategory(string $name): Category
+    {
+        $category = Category::withTrashed()->where('name', $name)->first()
+            ?? Category::create(['name' => $name]);
+
+        if ($category->trashed()) {
+            $category->restore();
+        }
+
+        return $category;
     }
 
     public function addUnit(string $name): string
@@ -615,7 +635,7 @@ class Index extends Component
         }
 
         foreach ($this->importRows as $row) {
-            $category = Category::firstOrCreate(['name' => $row['category_name']]);
+            $category = $this->findOrCreateCategory($row['category_name']);
             $unit = Unit::firstOrCreate(['name' => $row['unit_name']]);
 
             $product = Product::withTrashed()->where('sku', $row['sku'])->first() ?? new Product(['sku' => $row['sku']]);

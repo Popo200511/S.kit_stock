@@ -73,7 +73,7 @@ class Login extends Component
         }
 
         RateLimiter::clear($throttleKey);
-        request()->session()->regenerate();
+        session()->regenerate();
         $user->forceFill(['last_login_at' => now()])->save();
 
         return redirect()->route($user->landingRoute());

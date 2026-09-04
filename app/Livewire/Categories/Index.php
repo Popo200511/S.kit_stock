@@ -68,7 +68,13 @@ class Index extends Component
         if ($this->editingId) {
             Category::findOrFail($this->editingId)->update(['name' => $name]);
         } else {
-            Category::create(['name' => $name]);
+            // Category uses SoftDeletes — a name once used by a deleted category
+            // still occupies the DB's unique index, so a plain create() here would
+            // throw a UniqueConstraintViolationException even though the $exists
+            // check above (which excludes trashed rows) said the name was free.
+            // Bring the old row back instead of crashing on a name that "looks" new.
+            $trashed = Category::onlyTrashed()->where('name', $name)->first();
+            $trashed ? $trashed->restore() : Category::create(['name' => $name]);
         }
 
         $this->showForm = false;

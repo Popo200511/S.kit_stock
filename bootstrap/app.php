@@ -1,9 +1,18 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsActive;
+use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+
+// ถ้า user ที่ login ค้างอยู่แล้วหลงไปเปิด /login (เช่น bookmark เก่า, กด back หลัง logout)
+// middleware 'guest' เริ่มต้นของ Laravel จะเด้งไป route('dashboard') เสมอ ไม่สนสิทธิ์ผู้ใช้
+// แต่หน้า dashboard ต้องมีสิทธิ์ view_reports — พนักงานที่เห็นแค่ "สินค้า" จะโดนเด้งไปหน้าที่ตัวเอง
+// เข้าไม่ได้แล้วเจอ 403 แทนที่จะไปหน้าจริงของตัวเอง แก้ให้ใช้ landingRoute() แบบเดียวกับ route "/"
+RedirectIfAuthenticated::redirectUsing(
+    fn ($request) => route($request->user()?->landingRoute() ?? 'login')
+);
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
