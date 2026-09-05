@@ -74,12 +74,12 @@
                             @endif
                         </div>
                     </div>
-                    <div class="flex-1 min-w-[190px] flex flex-col gap-1 max-h-[196px] overflow-y-auto">
+                    <div class="flex-1 min-w-[190px] flex flex-col gap-1 max-h-[196px] overflow-y-auto overflow-x-hidden">
                         @forelse ($activePie['legend'] as $l)
                             @if ($chartMode !== 'daily')
                                 <button type="button" wire:key="pie-{{ $l['key'] }}" wire:click="selectMonth('{{ $l['key'] }}')"
                                     @class([
-                                        'flex items-center gap-2 text-[12.5px] rounded-lg px-1.5 py-1 -mx-1.5 text-left transition-colors hover:bg-surface2 cursor-pointer',
+                                        'w-full flex items-center gap-2 text-[12.5px] rounded-lg px-1.5 py-1 -mx-1.5 text-left transition-colors hover:bg-surface2 cursor-pointer',
                                         'bg-surface2' => $l['key'] === $selectedMonth,
                                     ])>
                                     <i class="w-2.5 h-2.5 shrink-0 rounded-[3px] inline-block" style="background:{{ $l['color'] }}"></i>
