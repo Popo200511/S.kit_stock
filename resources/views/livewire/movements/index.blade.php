@@ -437,9 +437,11 @@
 
                 <div class="flex flex-col gap-4 px-5 pb-5">
 
+                {{-- คนละสีกันไปเลย (เขียว = รับเข้า, ส้ม = เบิกออก) ไม่ใช่สีเดียวกันทั้งคู่ตอนเลือก —
+                กันคนกดสลับ รับเข้า/เบิกออก พลาดโดยไม่ทันสังเกต แค่กวาดตาดูสีก็รู้ทันทีว่าอยู่โหมดไหน --}}
                 <div class="flex gap-1.5 bg-chip p-[3px] rounded-[9px]">
-                    <button wire:click="setFormType('in')" class="flex-1 text-center py-2 rounded-[7px] text-[13px] font-medium {{ $form['type'] === 'in' ? 'bg-surface shadow-sm' : 'text-muted2' }}">รับเข้า</button>
-                    <button wire:click="setFormType('out')" class="flex-1 text-center py-2 rounded-[7px] text-[13px] font-medium {{ $form['type'] === 'out' ? 'bg-surface shadow-sm' : 'text-muted2' }}">เบิกออก</button>
+                    <button wire:click="setFormType('in')" class="flex-1 text-center py-2 rounded-[7px] text-[13px] font-medium {{ $form['type'] === 'in' ? 'bg-accent text-white shadow-sm' : 'text-muted2' }}">รับเข้า</button>
+                    <button wire:click="setFormType('out')" class="flex-1 text-center py-2 rounded-[7px] text-[13px] font-medium {{ $form['type'] === 'out' ? 'bg-warn text-white shadow-sm' : 'text-muted2' }}">เบิกออก</button>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2.5">
@@ -458,14 +460,7 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <div class="flex flex-col gap-1.5">
-                            <div class="flex items-center justify-between gap-2">
-                                <label class="text-[11.5px] text-muted">สินค้า</label>
-                                @if ($lineProduct)
-                                    <span @class(['text-[11px] font-medium tabular-nums', 'text-danger' => (float) $lineProduct->stock <= 0, 'text-muted2' => (float) $lineProduct->stock > 0])>
-                                        คงเหลือ {{ $lineProduct->stock_display }} {{ $lineProduct->unit?->name }}
-                                    </span>
-                                @endif
-                            </div>
+                            <label class="text-[11.5px] text-muted">สินค้า</label>
                             <x-combobox field="lineProductId" :options="$productOptions" placeholder="เลือกสินค้า" :live="true" />
                         </div>
                         <div class="flex flex-col gap-1.5">
@@ -483,7 +478,14 @@
 
                     <div class="grid grid-cols-3 gap-2">
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-[11.5px] text-muted">จำนวน</label>
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="text-[11.5px] text-muted">จำนวน</label>
+                                @if ($lineProduct)
+                                    <span @class(['text-[11px] font-medium tabular-nums', 'text-danger' => (float) $lineProduct->stock <= 0, 'text-muted2' => (float) $lineProduct->stock > 0])>
+                                        คงเหลือ {{ $lineProduct->stock_display }} {{ $lineProduct->unit?->name }}
+                                    </span>
+                                @endif
+                            </div>
                             <input type="number" min="1" wire:model.live="lineQty" placeholder="0" class="border border-border3 rounded-lg px-2.5 py-2 text-[13px] bg-surface text-right tabular-nums focus:border-accent focus:ring-0 focus:outline-none">
                         </div>
                         <div class="flex flex-col gap-1.5">
