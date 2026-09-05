@@ -58,21 +58,43 @@
             </div>
 
             @if ($chartView === 'pie')
+                @php $selectedSlice = $chartMode !== 'daily' ? collect($activePie['legend'])->firstWhere('key', $selectedMonth) : null; @endphp
+                @if ($chartMode !== 'daily')
+                    <span class="text-[11px] text-muted2 block mb-3">คลิกช่วงในรายการเพื่อดูข้อมูลเดือนนั้น</span>
+                @endif
                 <div class="flex flex-wrap items-center gap-5">
                     <div class="relative w-[186px] h-[186px] shrink-0 rounded-full" style="background:{{ $activePie['gradient'] }}">
                         <div class="absolute inset-[31%] rounded-full bg-surface flex flex-col items-center justify-center gap-0.5 shadow-[inset_0_0_0_1px_var(--line)] text-center px-2">
-                            <span class="text-[10.5px] text-muted2">รวมทั้งหมด</span>
-                            <span class="text-sm font-semibold tabular-nums tracking-tight">{{ number_format($activePie['total']) }} บาท</span>
+                            @if ($selectedSlice)
+                                <span class="text-[10.5px] text-muted2 truncate max-w-full">{{ $selectedSlice['label'] }}</span>
+                                <span class="text-sm font-semibold tabular-nums tracking-tight">{{ number_format($selectedSlice['value']) }} บาท</span>
+                            @else
+                                <span class="text-[10.5px] text-muted2">รวมทั้งหมด</span>
+                                <span class="text-sm font-semibold tabular-nums tracking-tight">{{ number_format($activePie['total']) }} บาท</span>
+                            @endif
                         </div>
                     </div>
                     <div class="flex-1 min-w-[190px] flex flex-col gap-1 max-h-[196px] overflow-y-auto">
                         @forelse ($activePie['legend'] as $l)
-                            <div class="flex items-center gap-2 text-[12.5px] rounded-lg px-1.5 py-1">
-                                <i class="w-2.5 h-2.5 shrink-0 rounded-[3px] inline-block" style="background:{{ $l['color'] }}"></i>
-                                <span class="flex-1 min-w-0 truncate">{{ $l['label'] }}</span>
-                                <span class="tabular-nums text-text4 whitespace-nowrap">{{ number_format($l['value']) }} บาท</span>
-                                <span class="tabular-nums font-semibold min-w-[38px] text-right whitespace-nowrap">{{ $l['pct'] }}%</span>
-                            </div>
+                            @if ($chartMode !== 'daily')
+                                <button type="button" wire:key="pie-{{ $l['key'] }}" wire:click="selectMonth('{{ $l['key'] }}')"
+                                    @class([
+                                        'flex items-center gap-2 text-[12.5px] rounded-lg px-1.5 py-1 -mx-1.5 text-left transition-colors hover:bg-surface2 cursor-pointer',
+                                        'bg-surface2' => $l['key'] === $selectedMonth,
+                                    ])>
+                                    <i class="w-2.5 h-2.5 shrink-0 rounded-[3px] inline-block" style="background:{{ $l['color'] }}"></i>
+                                    <span @class(['flex-1 min-w-0 truncate', 'font-semibold' => $l['key'] === $selectedMonth])>{{ $l['label'] }}</span>
+                                    <span class="tabular-nums text-text4 whitespace-nowrap">{{ number_format($l['value']) }} บาท</span>
+                                    <span class="tabular-nums font-semibold min-w-[38px] text-right whitespace-nowrap">{{ $l['pct'] }}%</span>
+                                </button>
+                            @else
+                                <div class="flex items-center gap-2 text-[12.5px] rounded-lg px-1.5 py-1">
+                                    <i class="w-2.5 h-2.5 shrink-0 rounded-[3px] inline-block" style="background:{{ $l['color'] }}"></i>
+                                    <span class="flex-1 min-w-0 truncate">{{ $l['label'] }}</span>
+                                    <span class="tabular-nums text-text4 whitespace-nowrap">{{ number_format($l['value']) }} บาท</span>
+                                    <span class="tabular-nums font-semibold min-w-[38px] text-right whitespace-nowrap">{{ $l['pct'] }}%</span>
+                                </div>
+                            @endif
                         @empty
                             <span class="text-sm text-muted2">ยังไม่มีข้อมูลในช่วงนี้</span>
                         @endforelse

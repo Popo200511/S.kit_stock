@@ -165,7 +165,7 @@ class Index extends Component
             $from = $cumulative;
             $cumulative += $pct;
             $stops[] = "{$color} {$from}% {$cumulative}%";
-            $legend[] = ['label' => $s['label'], 'color' => $color, 'value' => $s['out'], 'pct' => round($pct)];
+            $legend[] = ['key' => $s['key'], 'label' => $s['label'], 'color' => $color, 'value' => $s['out'], 'pct' => round($pct)];
         }
 
         return [
