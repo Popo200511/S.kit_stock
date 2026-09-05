@@ -259,7 +259,13 @@
         <div wire:click="closeForm" class="fixed inset-0 bg-black/40 z-[85] flex items-center justify-center p-3.5">
             <div wire:click.stop class="w-full max-w-[520px] max-h-[92vh] overflow-y-auto bg-surface rounded-2xl shadow-2xl flex flex-col">
                 <div class="sticky top-0 z-10 bg-surface rounded-t-2xl flex items-start justify-between gap-3 px-5 pt-5 pb-3 border-b border-hairline2">
-                    <span class="text-[17px] font-semibold tracking-tight">{{ $editingId ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่' }}</span>
+                    <span class="text-[17px] font-semibold tracking-tight leading-snug">
+                        @if ($editingId)
+                            แก้ไขสินค้า @if ($form['name']) <span class="text-muted2 font-normal">· {{ $form['name'] }}</span> @endif
+                        @else
+                            เพิ่มสินค้าใหม่
+                        @endif
+                    </span>
                     <button wire:click="closeForm" class="w-[29px] h-[29px] rounded-lg flex items-center justify-center text-danger hover:bg-danger-tint">✕</button>
                 </div>
 
