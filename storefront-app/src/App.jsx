@@ -124,6 +124,7 @@ function App() {
   const productRoute = window.location.pathname.match(/^\/shop\/product\/(\d+)\/?$/)
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false)
   const [navFixed, setNavFixed] = useState(false)
   const [page, setPage] = useState(productRoute ? 'detail' : 'home')
   const [catalogFilter, setCatalogFilter] = useState('ทั้งหมด')
@@ -172,6 +173,16 @@ function App() {
     setPage(nextPage)
     window.history.pushState({}, '', '/shop')
     setMenuOpen(false)
+    setCategoryDropdownOpen(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const openCategory = (category = 'ทั้งหมด') => {
+    setCatalogFilter(category)
+    setPage('products')
+    window.history.pushState({}, '', '/shop')
+    setMenuOpen(false)
+    setCategoryDropdownOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -243,8 +254,14 @@ function App() {
           <span><strong>ส.กิจการค้า</strong><small>ศูนย์รวมอาหารสัตว์คุณภาพ</small></span>
         </button>
         <nav className={menuOpen ? 'nav-links is-open' : 'nav-links'}>
-          <button onClick={() => openPage('home')}>หน้าแรก</button>
-          <button onClick={() => openPage('products')}>สินค้า <ChevronDown size={15} /></button>
+          <button className="nav-home-link" onClick={() => openPage('home')}>หน้าแรก</button>
+          <div className={`nav-product-menu${categoryDropdownOpen ? ' is-open' : ''}`}>
+            <button className="nav-product-trigger" onClick={() => setCategoryDropdownOpen((open) => !open)} aria-expanded={categoryDropdownOpen}>สินค้า <ChevronDown size={15} /></button>
+            {categoryDropdownOpen && <div className="nav-product-dropdown">
+              <button onClick={() => openCategory('ทั้งหมด')}><ShoppingBag /> <span><strong>สินค้าทั้งหมด</strong><small>ดูสินค้าทุกหมวดหมู่</small></span></button>
+              {categoryNames.map((category) => <button key={category} onClick={() => openCategory(category)}><PawPrint /><span><strong>{category}</strong><small>เลือกดูสินค้าในหมวดนี้</small></span></button>)}
+            </div>}
+          </div>
           <button onClick={() => scrollTo('recommended')}>สินค้าแนะนำ</button>
           <button onClick={() => scrollTo('about')}>เกี่ยวกับเรา</button>
           <button onClick={() => scrollTo('contact')}>ติดต่อเรา</button>
