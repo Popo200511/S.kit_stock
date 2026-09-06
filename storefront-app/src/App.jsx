@@ -42,7 +42,7 @@ function ProductPicture({ product }) {
   return <span className="product-placeholder" aria-hidden="true">{product.name.charAt(0)}</span>
 }
 
-function ProductDetailPage({ productId, products, formatPrice, onBack }) {
+function ProductDetailPage({ productId, products, formatPrice, onBack, onAddToCart }) {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -102,6 +102,7 @@ function ProductDetailPage({ productId, products, formatPrice, onBack }) {
           </div>
           <div className="inquiry-actions"><button onClick={copyInquiry}><ClipboardCheck /> {copied ? 'คัดลอกข้อความแล้ว' : 'คัดลอกข้อความสอบถาม'}</button><button onClick={shareInquiry}><Share2 /> แชร์รายการสินค้า</button></div>
           <div className="detail-actions">
+            <button className="add-cart-button" disabled={!product.in_stock} onClick={() => onAddToCart(product, quantity)}><ShoppingBag size={19} /> {product.in_stock ? 'เพิ่มลงตะกร้า' : 'สินค้าหมดชั่วคราว'}</button>
             <a className="primary-button" href="tel:0956699178"><Phone size={19} /> โทร 095-669-9178</a>
             <a className="detail-facebook" href="https://www.facebook.com/search/top?q=ส.กิจการค้า" target="_blank" rel="noreferrer"><MessageCircle size={19} /> ทัก Facebook</a>
             <a className="shopee-button" href="https://shopee.co.th/shop/1789277286" target="_blank" rel="noreferrer"><ShoppingBag size={19} /> ดูร้านใน Shopee</a>
@@ -129,6 +130,11 @@ function App() {
   const [catalogSearch, setCatalogSearch] = useState('')
   const [catalogSort, setCatalogSort] = useState('name-asc')
   const [catalogPage, setCatalogPage] = useState(1)
+  const [cartOpen, setCartOpen] = useState(false)
+  const [cartCopied, setCartCopied] = useState(false)
+  const [cart, setCart] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('s-kij-cart')) ?? [] } catch { return [] }
+  })
 
   // สินค้า + ประเภทสินค้าจริงจากระบบจัดการสต็อก — ดึงครั้งเดียวตอนเปิดเว็บ (จำนวนสินค้า
   // ไม่ได้เยอะมาก กรอง/ค้นหาฝั่ง browser เอาก็พอ ไม่ต้องยิง request ใหม่ทุกครั้งที่พิมพ์ค้นหา)
@@ -153,6 +159,7 @@ function App() {
   }
 
   useEffect(() => { loadCatalog() }, [])
+  useEffect(() => { localStorage.setItem('s-kij-cart', JSON.stringify(cart)) }, [cart])
 
    useEffect(() => {
     const handleScroll = () => setNavFixed(window.scrollY > 42)
@@ -200,6 +207,29 @@ function App() {
     ? new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(price)
     : 'สอบถามราคา'
 
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0)
+  const cartTotal = cart.reduce((total, item) => total + (Number(item.price) || 0) * item.quantity, 0)
+  const addToCart = (product, quantity = 1) => {
+    setCart((current) => {
+      const found = current.find((item) => item.id === product.id)
+      if (found) return current.map((item) => item.id === product.id ? { ...item, quantity: Math.min(999, item.quantity + quantity) } : item)
+      return [...current, { id: product.id, name: product.name, size: product.size, price: product.price, photo_url: product.photo_url, quantity }]
+    })
+    setCartOpen(true)
+  }
+  const changeCartQuantity = (id, amount) => setCart((current) => current.map((item) => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + amount) } : item))
+  const removeFromCart = (id) => setCart((current) => current.filter((item) => item.id !== id))
+  const cartMessage = `สอบถามสินค้าจากร้าน ส.กิจการค้า\n${cart.map((item, index) => `${index + 1}. ${item.name}${item.size ? ` (${item.size})` : ''} จำนวน ${item.quantity} — ${formatPrice((Number(item.price) || 0) * item.quantity)}`).join('\n')}\n${cartTotal > 0 ? `รวมราคาสินค้าโดยประมาณ: ${formatPrice(cartTotal)}\n` : ''}กรุณาตรวจสอบสินค้า ราคา และค่าจัดส่งให้ด้วยครับ`
+  const copyCart = async () => {
+    await navigator.clipboard.writeText(cartMessage)
+    setCartCopied(true)
+    window.setTimeout(() => setCartCopied(false), 2200)
+  }
+  const shareCart = async () => {
+    if (navigator.share) await navigator.share({ title: 'รายการสินค้าที่สนใจ', text: cartMessage })
+    else await copyCart()
+  }
+
   return (
     <div className="site-shell">
       <div className="announcement">
@@ -222,14 +252,14 @@ function App() {
         <div className="nav-actions">
           <button className="icon-button" onClick={() => setSearchOpen(!searchOpen)} aria-label="ค้นหา"><Search /></button>
           <button className="icon-button hide-mobile" aria-label="บัญชีผู้ใช้"><CircleUserRound /></button>
-          <button className="bag-button" aria-label="ตะกร้าสินค้า"><ShoppingBag /><span>0</span></button>
+          <button className="bag-button" onClick={() => setCartOpen(true)} aria-label={`ตะกร้าสินค้า ${cartCount} รายการ`}><ShoppingBag /><span>{cartCount}</span></button>
           <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="เปิดเมนู">{menuOpen ? <X /> : <Menu />}</button>
         </div>
         {searchOpen && <div className="search-panel"><Search size={19} /><input autoFocus placeholder="ค้นหาอาหารสัตว์หรืออุปกรณ์..." /></div>}
       </header>
       {navFixed && <div className="navbar-spacer" aria-hidden="true" />}
 
-      {page === 'detail' ? <ProductDetailPage productId={productRoute?.[1]} products={products} formatPrice={formatPrice} onBack={() => openPage('products')} /> : page === 'home' ? <main>
+      {page === 'detail' ? <ProductDetailPage productId={productRoute?.[1]} products={products} formatPrice={formatPrice} onBack={() => openPage('products')} onAddToCart={addToCart} /> : page === 'home' ? <main>
         <section className="hero-banner" id="home" aria-label="อาหารสัตว์ดี มีคุณภาพ เพื่อสัตว์เลี้ยงที่คุณรัก">
           <img src="/assets/banner-products-real-v4.png" alt="อาหารสัตว์ดี มีคุณภาพ เพื่อสัตว์เลี้ยงที่คุณรัก พร้อมอาหารสุนัขและอาหารแมว 7 รายการ" />
           <button className="banner-cta" onClick={() => openPage('products')}>ดูสินค้าทั้งหมด <ArrowRight size={18} /></button>
@@ -312,7 +342,7 @@ function App() {
                 <a className="product-photo-link" href={`/shop/product/${product.id}`} aria-label={`ดูรายละเอียด ${product.name}`}><ProductPicture product={product} /></a>
                 <a className="product-quick-link" href={`/shop/product/${product.id}`} aria-label={`ดู ${product.name}`}><HeartHandshake size={19} /></a>
               </div>
-              <div className="product-info"><small>{product.category}</small><h3><a className="product-name-link" href={`/shop/product/${product.id}`}>{product.name}</a></h3><p>{product.size}</p><strong className="product-price">{formatPrice(product.price)}</strong><div className="product-actions"><a className="product-detail" href={`/shop/product/${product.id}`}>ดูรายละเอียด <ArrowRight size={16} /></a><a className="product-enquire" href="tel:0956699178">โทรสอบถาม</a></div></div>
+              <div className="product-info"><small>{product.category}</small><h3><a className="product-name-link" href={`/shop/product/${product.id}`}>{product.name}</a></h3><p>{product.size}</p><strong className="product-price">{formatPrice(product.price)}</strong><div className="product-actions"><button className="product-cart" disabled={!product.in_stock} onClick={() => addToCart(product)}><ShoppingBag size={15} />{product.in_stock ? 'ใส่ตะกร้า' : 'สินค้าหมด'}</button><a className="product-detail" href={`/shop/product/${product.id}`}>ดูรายละเอียด <ArrowRight size={16} /></a><a className="product-enquire" href="tel:0956699178">โทรสอบถาม</a></div></div>
             </article>)}
           </div>{totalPages > 1 && <nav className="catalog-pagination" aria-label="เปลี่ยนหน้าสินค้า"><button disabled={catalogPage === 1} onClick={() => setCatalogPage((pageNumber) => pageNumber - 1)}><ArrowLeft size={17} />ก่อนหน้า</button><div>{Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => <button key={pageNumber} className={catalogPage === pageNumber ? 'active' : ''} onClick={() => setCatalogPage(pageNumber)}>{pageNumber}</button>)}</div><button disabled={catalogPage === totalPages} onClick={() => setCatalogPage((pageNumber) => pageNumber + 1)}>ถัดไป<ArrowRight size={17} /></button></nav>}</> : <div className="catalog-empty"><Search size={30} /><h3>{isLoading ? 'กำลังโหลดสินค้า...' : (loadError ? 'โหลดรายการสินค้าไม่สำเร็จ' : 'ไม่พบสินค้าที่ค้นหา')}</h3><p>{isLoading ? 'กรุณารอสักครู่' : (loadError ? 'ตรวจสอบการเชื่อมต่อแล้วลองใหม่อีกครั้ง' : 'ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น')}</p>{loadError && <button className="primary-button" onClick={loadCatalog}>ลองโหลดใหม่</button>}</div>}
         </section>
@@ -322,6 +352,20 @@ function App() {
         <div className="footer-main"><div className="footer-brand"><img src="/assets/s-kij-logo.png" alt="โลโก้ ส.กิจการค้า" /><p>อาหารสัตว์ดี มีคุณภาพ<br />บริการด้วยใจ</p></div><div><h4>สินค้า</h4><a href="#categories">อาหารสัตว์เลี้ยง</a><a href="#categories">อาหารสัตว์ฟาร์ม</a><a href="#categories">อุปกรณ์เลี้ยงสัตว์</a><a href="https://shopee.co.th/shop/1789277286?uls_trackid=56hnr8le002p&utm_content=58CnmyeXriKScXfSwoPfG69XgsZ" target="_blank" rel="noreferrer">เลือกซื้อบน Shopee</a></div><div><h4>ช่วยเหลือ</h4><a href="#contact">ติดต่อเรา</a><a href="#about">เกี่ยวกับร้าน</a><a href="#recommended">สินค้าแนะนำ</a></div><div><h4>ติดต่อร้าน</h4><a href="tel:0956699178">095-669-9178</a><a href="mailto:swisuttiya1@gmail.com">swisuttiya1@gmail.com</a><a href="https://www.facebook.com/search/top?q=ส.กิจการค้า" target="_blank" rel="noreferrer">Facebook: ส.กิจการค้า</a><a href="https://maps.app.goo.gl/YLaEaMjqeYFKG2uP8" target="_blank" rel="noreferrer">369 หมู่ 1 ต.ศรีสุทโธ<br />อ.บ้านดุง จ.อุดรธานี 41190</a></div></div>
         <div className="footer-bottom"><span>© 2026 ส.กิจการค้า</span><span>เลขที่ใบอนุญาตขายอาหารสัตว์ 62410000300252</span></div>
       </footer>
+
+      {cartOpen && <div className="cart-layer" role="dialog" aria-modal="true" aria-label="ตะกร้าสินค้า">
+        <button className="cart-backdrop" onClick={() => setCartOpen(false)} aria-label="ปิดตะกร้า" />
+        <aside className="cart-drawer">
+          <header><div><span className="kicker">รายการที่สนใจ</span><h2>ตะกร้าสินค้า <small>{cartCount} ชิ้น</small></h2></div><button onClick={() => setCartOpen(false)} aria-label="ปิด"><X /></button></header>
+          <div className="cart-items">
+            {cart.length ? cart.map((item) => <article className="cart-item" key={item.id}>
+              <a className="cart-thumb" href={`/shop/product/${item.id}`}><ProductPicture product={item} /></a>
+              <div className="cart-item-info"><h3><a href={`/shop/product/${item.id}`}>{item.name}</a></h3><small>{item.size || 'ไม่ระบุขนาด'}</small><strong>{formatPrice(item.price)}</strong><div className="cart-item-controls"><div className="quantity-control"><button onClick={() => changeCartQuantity(item.id, -1)} aria-label="ลดจำนวน"><Minus /></button><output>{item.quantity}</output><button onClick={() => changeCartQuantity(item.id, 1)} aria-label="เพิ่มจำนวน"><Plus /></button></div><button className="cart-remove" onClick={() => removeFromCart(item.id)}>ลบ</button></div></div>
+            </article>) : <div className="cart-empty"><ShoppingBag /><h3>ตะกร้ายังว่างอยู่</h3><p>เลือกสินค้าที่สนใจ แล้วส่งรายการให้ร้านเช็กราคาได้เลย</p><button className="primary-button" onClick={() => { setCartOpen(false); openPage('products') }}>เลือกดูสินค้า</button></div>}
+          </div>
+          {cart.length > 0 && <div className="cart-summary"><div><span>รวมโดยประมาณ</span><strong>{cartTotal > 0 ? formatPrice(cartTotal) : 'สอบถามราคา'}</strong></div><small>ราคานี้ยังไม่รวมค่าจัดส่ง กรุณายืนยันกับทางร้านอีกครั้ง</small><button className="cart-primary" onClick={copyCart}><ClipboardCheck /> {cartCopied ? 'คัดลอกรายการแล้ว' : 'คัดลอกรายการสอบถาม'}</button><button className="cart-secondary" onClick={shareCart}><Share2 /> แชร์รายการ</button></div>}
+        </aside>
+      </div>}
 
       <nav className="floating-contact" aria-label="ช่องทางติดต่อด่วน">
         <a className="float-phone" href="tel:0956699178" aria-label="โทรหาร้าน"><Phone /></a>
