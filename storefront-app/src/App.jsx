@@ -42,11 +42,72 @@ function ProductPicture({ product }) {
   return <span className="product-placeholder" aria-hidden="true">{product.name.charAt(0)}</span>
 }
 
+function ProductDetailPage({ productId, products, formatPrice, onBack }) {
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(false)
+    fetch(`/shop/api/products/${productId}`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Product not found')
+        return response.json()
+      })
+      .then((response) => setProduct(response.data))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }, [productId])
+
+  if (loading) return <main className="detail-page"><div className="detail-state"><PawPrint /><h1>กำลังโหลดสินค้า...</h1><p>รอสักครู่นะครับ</p></div></main>
+  if (error || !product) return <main className="detail-page"><div className="detail-state"><Search /><h1>ไม่พบสินค้านี้</h1><p>สินค้าอาจถูกย้ายหรือหยุดจำหน่ายชั่วคราว</p><button className="primary-button" onClick={onBack}>กลับไปดูสินค้าทั้งหมด</button></div></main>
+
+  const related = products.filter((item) => item.id !== product.id && item.category === product.category).slice(0, 4)
+
+  return <main className="detail-page">
+    <section className="detail-wrap">
+      <nav className="detail-breadcrumb" aria-label="เส้นทางหน้าเว็บ">
+        <button onClick={onBack}><ArrowLeft size={17} /> สินค้าทั้งหมด</button><span>/</span><span>{product.category || 'สินค้า'}</span><span>/</span><strong>{product.name}</strong>
+      </nav>
+
+      <section className="detail-layout">
+        <div className="detail-media">
+          <span className="detail-category-pill"><PawPrint size={16} /> {product.category || 'สินค้า'}</span>
+          <div className="detail-picture"><ProductPicture product={product} /></div>
+          <p><BadgeCheck size={18} /> รูปสินค้าจริงจากร้าน ส.กิจการค้า</p>
+        </div>
+
+        <div className="detail-panel">
+          <span className="kicker">คัดสรรเพื่อสัตว์เลี้ยงที่คุณรัก</span>
+          <h1>{product.name}</h1>
+          {product.size && <p className="detail-size">ขนาด {product.size}</p>}
+          <div className="detail-price-row"><strong>{formatPrice(product.price)}</strong><span className={product.in_stock ? 'in-stock' : 'out-stock'}>{product.in_stock ? 'พร้อมจำหน่าย' : 'หมดชั่วคราว'}</span></div>
+          <div className="detail-notice"><HeartHandshake /><div><strong>สนใจสินค้านี้?</strong><p>โทรหรือทักหาร้านเพื่อเช็กราคา จำนวนคงเหลือ และค่าจัดส่งได้ทันที</p></div></div>
+          <div className="detail-actions">
+            <a className="primary-button" href="tel:0956699178"><Phone size={19} /> โทร 095-669-9178</a>
+            <a className="detail-facebook" href="https://www.facebook.com/search/top?q=ส.กิจการค้า" target="_blank" rel="noreferrer"><MessageCircle size={19} /> ทัก Facebook</a>
+            <a className="shopee-button" href="https://shopee.co.th/shop/1789277286" target="_blank" rel="noreferrer"><ShoppingBag size={19} /> ดูร้านใน Shopee</a>
+          </div>
+          <div className="detail-description"><h2>รายละเอียดสินค้า</h2><p>{product.description || `${product.name}${product.size ? ` ขนาด ${product.size}` : ''} สินค้าคุณภาพจากร้าน ส.กิจการค้า สามารถสอบถามข้อมูลเพิ่มเติมและราคาส่งกับทางร้านได้โดยตรง`}</p><dl><div><dt>หมวดหมู่</dt><dd>{product.category || '-'}</dd></div><div><dt>ขนาด</dt><dd>{product.size || '-'}</dd></div><div><dt>สถานะ</dt><dd>{product.in_stock ? 'มีสินค้า' : 'หมดชั่วคราว'}</dd></div></dl></div>
+        </div>
+      </section>
+
+      <section className="detail-trust" aria-label="บริการของร้าน">
+        {services.slice(0, 4).map(({ icon: Icon, title, text }) => <article key={title}><Icon /><span><strong>{title}</strong><small>{text}</small></span></article>)}
+      </section>
+
+      {related.length > 0 && <section className="detail-related"><div className="section-heading"><div><span className="kicker">เลือกดูเพิ่มเติม</span><h2>สินค้าในหมวดเดียวกัน</h2></div><button className="text-link" onClick={onBack}>ดูทั้งหมด <ArrowRight size={17} /></button></div><div className="product-grid">{related.map((item, index) => <article className="product-card" key={item.id}><div className="product-picture" style={{ background: productCardColors[index % productCardColors.length] }}><a className="product-photo-link" href={`/shop/product/${item.id}`}><ProductPicture product={item} /></a></div><div className="product-info"><small>{item.category}</small><h3><a className="product-name-link" href={`/shop/product/${item.id}`}>{item.name}</a></h3><p>{item.size}</p><strong className="product-price">{formatPrice(item.price)}</strong></div></article>)}</div></section>}
+    </section>
+  </main>
+}
+
 function App() {
+  const productRoute = window.location.pathname.match(/^\/shop\/product\/(\d+)\/?$/)
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [navFixed, setNavFixed] = useState(false)
-  const [page, setPage] = useState('home')
+  const [page, setPage] = useState(productRoute ? 'detail' : 'home')
   const [catalogFilter, setCatalogFilter] = useState('ทั้งหมด')
   const [catalogSearch, setCatalogSearch] = useState('')
   const [catalogSort, setCatalogSort] = useState('name-asc')
@@ -85,6 +146,7 @@ function App() {
 
   const openPage = (nextPage) => {
     setPage(nextPage)
+    window.history.pushState({}, '', '/shop')
     setMenuOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -150,7 +212,7 @@ function App() {
       </header>
       {navFixed && <div className="navbar-spacer" aria-hidden="true" />}
 
-      {page === 'home' ? <main>
+      {page === 'detail' ? <ProductDetailPage productId={productRoute?.[1]} products={products} formatPrice={formatPrice} onBack={() => openPage('products')} /> : page === 'home' ? <main>
         <section className="hero-banner" id="home" aria-label="อาหารสัตว์ดี มีคุณภาพ เพื่อสัตว์เลี้ยงที่คุณรัก">
           <img src="/assets/banner-products-real-v4.png" alt="อาหารสัตว์ดี มีคุณภาพ เพื่อสัตว์เลี้ยงที่คุณรัก พร้อมอาหารสุนัขและอาหารแมว 7 รายการ" />
           <button className="banner-cta" onClick={() => openPage('products')}>ดูสินค้าทั้งหมด <ArrowRight size={18} /></button>

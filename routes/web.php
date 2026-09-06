@@ -53,11 +53,11 @@ Route::middleware('guest')->group(function () {
 // storefront-app/README.md วิธี build) ที่ build แล้วก็อปมาไว้ที่ public/assets/ +
 // public/shop.html — ดึงสินค้าจริงผ่าน /shop/api/* ด้านล่าง แทนหน้า Livewire เดิม
 // (Storefront\Index) ที่เก็บโค้ดไว้เผื่อย้อนกลับ แต่ไม่ได้ผูก route ไว้แล้ว
-// /product, /about, /contact ยังเป็นหน้า Livewire แบบเดิม — เว็บใหม่ยังไม่มีหน้าเทียบเท่า
-// (ลิงก์แชร์สินค้ารายชิ้น/preview รูป-ชื่อ-ราคาไปไลน์-เฟซบุ๊ก ยังพึ่งหน้านี้อยู่)
+// /product ใช้หน้า React เดียวกันและโหลดข้อมูลสินค้ารายชิ้นจาก API ด้านล่าง
+// ส่วน /about และ /contact ยังเป็นหน้า Livewire เดิม
 Route::prefix('shop')->name('shop.')->group(function () {
     Route::get('/', fn () => response()->file(public_path('shop.html')))->name('index');
-    Route::get('/product/{product}', Storefront\Show::class)->name('product');
+    Route::get('/product/{product}', fn () => response()->file(public_path('shop.html')))->name('product');
     Route::get('/about', Storefront\About::class)->name('about');
     Route::get('/contact', Storefront\Contact::class)->name('contact');
 
@@ -81,6 +81,22 @@ Route::prefix('shop')->name('shop.')->group(function () {
 
         return response()->json(['data' => $products]);
     })->name('api.products');
+
+    Route::get('/api/products/{product}', function (\App\Models\Product $product) {
+        abort_unless($product->active, 404);
+        $product->load('category:id,name');
+
+        return response()->json(['data' => [
+            'id' => $product->id,
+            'name' => $product->name,
+            'size' => $product->size,
+            'category' => $product->category?->name,
+            'description' => $product->description,
+            'photo_url' => $product->photo_path ? asset('storage/'.$product->photo_path) : null,
+            'price' => (float) $product->price,
+            'in_stock' => $product->stock > 0,
+        ]]);
+    })->name('api.product');
 
     Route::get('/api/categories', function () {
         $categories = \App\Models\Category::query()
