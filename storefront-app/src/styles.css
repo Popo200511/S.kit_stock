@@ -1214,16 +1214,17 @@ footer {
     background: #fff;
     border: 1px solid #f0e3e1;
     border-radius: 20px;
-    padding: 16px;
-    display: flex;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
-    gap: 18px;
+    gap: 16px 20px;
     box-shadow: 0 12px 36px #092a4a0b;
 }
 .catalog-search {
     height: 48px;
-    min-width: 340px;
+    min-width: 0;
+    max-width: 620px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1241,17 +1242,27 @@ footer {
     font: inherit;
 }
 .catalog-filters {
+    grid-column: 1/-1;
     display: flex;
-    gap: 7px;
+    gap: 8px;
     flex-wrap: wrap;
+    padding-top: 16px;
+    border-top: 1px solid #f3e7e8;
 }
 .catalog-filters button {
     border: 1px solid #efdfe1;
     background: #fff;
     color: #68747e;
     border-radius: 99px;
-    padding: 10px 17px;
+    min-height: 38px;
+    padding: 8px 14px;
+    font-size: 12px;
     font-weight: 600;
+}
+.catalog-filters button:hover {
+    border-color: #f19cac;
+    background: #fff7f8;
+    color: var(--pink-dark);
 }
 .catalog-filters button.active {
     background: var(--navy);
@@ -1318,6 +1329,8 @@ footer {
     margin: 0;
 }
 .catalog-sort {
+    grid-column: 2;
+    grid-row: 1;
     display: flex;
     align-items: center;
     gap: 9px;
@@ -1407,14 +1420,19 @@ footer {
 }
 @media (max-width: 900px) {
     .catalog-toolbar {
+        grid-template-columns: 1fr;
         align-items: stretch;
-        flex-direction: column;
     }
     .catalog-search {
         min-width: 0;
     }
     .catalog-sort {
+        grid-column: 1;
+        grid-row: auto;
         justify-content: space-between;
+    }
+    .catalog-filters {
+        grid-column: 1;
     }
     .catalog-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1438,6 +1456,21 @@ footer {
     .catalog-filters button {
         padding: 9px 12px;
         font-size: 12px;
+        flex: 0 0 auto;
+    }
+    .catalog-toolbar {
+        padding: 14px;
+        gap: 12px;
+        border-radius: 16px;
+    }
+    .catalog-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 12px 0 3px;
+        scrollbar-width: none;
+    }
+    .catalog-filters::-webkit-scrollbar {
+        display: none;
     }
     .catalog-pagination {
         gap: 7px;
