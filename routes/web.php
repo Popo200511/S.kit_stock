@@ -48,11 +48,47 @@ Route::middleware('guest')->group(function () {
 
 // หน้าร้านสาธารณะสำหรับลูกค้า — ตั้งใจไม่ใส่ middleware auth เพราะเปิดดู
 // สินค้า + ทักไลน์/โทรสั่งซื้อเท่านั้น ไม่มีตะกร้า ไม่มีการเขียนข้อมูลใดๆ ในนี้
+//
+// "/" เสิร์ฟหน้าเว็บ React (จากโฟลเดอร์ s_kit_pet_shop_homepage) ที่ build แล้วก็อปมาไว้ที่
+// public/assets/ + public/shop.html — ดึงสินค้าจริงผ่าน /shop/api/* ด้านล่าง แทนหน้า Livewire
+// เดิม (Storefront\Index) ที่เก็บโค้ดไว้เผื่อย้อนกลับ แต่ไม่ได้ผูก route ไว้แล้ว
+// /product, /about, /contact ยังเป็นหน้า Livewire แบบเดิม — เว็บใหม่ยังไม่มีหน้าเทียบเท่า
+// (ลิงก์แชร์สินค้ารายชิ้น/preview รูป-ชื่อ-ราคาไปไลน์-เฟซบุ๊ก ยังพึ่งหน้านี้อยู่)
 Route::prefix('shop')->name('shop.')->group(function () {
-    Route::get('/', Storefront\Index::class)->name('index');
+    Route::get('/', fn () => response()->file(public_path('shop.html')))->name('index');
     Route::get('/product/{product}', Storefront\Show::class)->name('product');
     Route::get('/about', Storefront\About::class)->name('about');
     Route::get('/contact', Storefront\Contact::class)->name('contact');
+
+    Route::get('/api/products', function () {
+        $products = \App\Models\Product::query()
+            ->where('active', true)
+            ->select(['id', 'name', 'size', 'category_id', 'photo_path', 'price'])
+            ->selectRaw('(stock > 0) as in_stock')
+            ->with('category:id,name')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'size' => $p->size,
+                'category' => $p->category?->name,
+                'photo_url' => $p->photo_path ? asset('storage/'.$p->photo_path) : null,
+                'price' => (float) $p->price,
+                'in_stock' => (bool) $p->in_stock,
+            ]);
+
+        return response()->json(['data' => $products]);
+    })->name('api.products');
+
+    Route::get('/api/categories', function () {
+        $categories = \App\Models\Category::query()
+            ->whereHas('products', fn ($q) => $q->where('active', true))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return response()->json(['data' => $categories]);
+    })->name('api.categories');
 });
 
 // เสิร์ฟไฟล์จาก public disk (รูปสินค้า ฯลฯ) ผ่าน route ตรงๆ แทนการพึ่ง symlink
