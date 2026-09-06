@@ -1,5 +1,5 @@
 import {
-  ArrowRight, BadgeCheck, Bird, Bone, Cat, ChevronDown, CircleUserRound,
+  ArrowLeft, ArrowRight, BadgeCheck, Bird, Bone, Cat, ChevronDown, CircleUserRound,
   Dog, Fish, HeartHandshake, LockKeyhole, Mail, MapPin, Menu, MessageCircle, PackageCheck, RefreshCcw,
   PawPrint, Phone, Search, ShieldCheck, ShoppingBag, Truck, Wheat, X,
 } from 'lucide-react'
@@ -33,8 +33,10 @@ const brands = ['Whiskas', 'BOBBI Cat', 'BOBBI Dog', 'Ole Kat', 'Bingo Star', 'D
 // สินค้าจริงส่วนใหญ่ยังไม่มีรูปในระบบ (ต้องอัปโหลดทีหลังในหน้า "สินค้า/ราคา") — ตัวนี้ตกลง
 // เป็นวงกลมอักษรตัวแรกของชื่อสินค้าแทนรูปที่ยังไม่มี เหมือนที่หน้าเว็บเดิม (Blade) ทำ
 function ProductPicture({ product }) {
-  if (product.photo_url) {
-    return <img src={product.photo_url} alt={product.name} loading="lazy" />
+  const [imageFailed, setImageFailed] = useState(false)
+
+  if (product.photo_url && !imageFailed) {
+    return <img src={product.photo_url} alt={product.name} loading="lazy" onError={() => setImageFailed(true)} />
   }
 
   return <span className="product-placeholder" aria-hidden="true">{product.name.charAt(0)}</span>
@@ -47,14 +49,19 @@ function App() {
   const [page, setPage] = useState('home')
   const [catalogFilter, setCatalogFilter] = useState('ทั้งหมด')
   const [catalogSearch, setCatalogSearch] = useState('')
+  const [catalogSort, setCatalogSort] = useState('name-asc')
+  const [catalogPage, setCatalogPage] = useState(1)
 
   // สินค้า + ประเภทสินค้าจริงจากระบบจัดการสต็อก — ดึงครั้งเดียวตอนเปิดเว็บ (จำนวนสินค้า
   // ไม่ได้เยอะมาก กรอง/ค้นหาฝั่ง browser เอาก็พอ ไม่ต้องยิง request ใหม่ทุกครั้งที่พิมพ์ค้นหา)
   const [products, setProducts] = useState([])
   const [categoryNames, setCategoryNames] = useState([])
   const [loadError, setLoadError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
+  const loadCatalog = () => {
+    setIsLoading(true)
+    setLoadError(false)
     Promise.all([
       fetch('/shop/api/products').then((r) => r.json()),
       fetch('/shop/api/categories').then((r) => r.json()),
@@ -64,7 +71,10 @@ function App() {
         setCategoryNames((categoriesRes.data ?? []).map((c) => c.name))
       })
       .catch(() => setLoadError(true))
-  }, [])
+      .finally(() => setIsLoading(false))
+  }
+
+  useEffect(() => { loadCatalog() }, [])
 
    useEffect(() => {
     const handleScroll = () => setNavFixed(window.scrollY > 42)
@@ -92,6 +102,24 @@ function App() {
     const query = catalogSearch.trim().toLowerCase()
     return matchesType && (!query || `${product.name} ${product.category ?? ''} ${product.size ?? ''}`.toLowerCase().includes(query))
   })
+
+  const sortedProducts = useMemo(() => [...visibleProducts].sort((a, b) => {
+    if (catalogSort === 'price-asc') return Number(a.price) - Number(b.price)
+    if (catalogSort === 'price-desc') return Number(b.price) - Number(a.price)
+    if (catalogSort === 'stock') return Number(b.in_stock) - Number(a.in_stock) || a.name.localeCompare(b.name, 'th')
+    if (catalogSort === 'name-desc') return b.name.localeCompare(a.name, 'th')
+    return a.name.localeCompare(b.name, 'th')
+  }), [visibleProducts, catalogSort])
+
+  const pageSize = 12
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / pageSize))
+  const paginatedProducts = sortedProducts.slice((catalogPage - 1) * pageSize, catalogPage * pageSize)
+
+  useEffect(() => { setCatalogPage(1) }, [catalogFilter, catalogSearch, catalogSort])
+
+  const formatPrice = (price) => Number(price) > 0
+    ? new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(price)
+    : 'สอบถามราคา'
 
   return (
     <div className="site-shell">
@@ -195,18 +223,19 @@ function App() {
             <div className="catalog-filters" aria-label="กรองประเภทสินค้า">
               {catalogFilters.map((filter) => <button key={filter} className={catalogFilter === filter ? 'active' : ''} onClick={() => setCatalogFilter(filter)}>{filter}</button>)}
             </div>
+            <label className="catalog-sort"><span>เรียงตาม</span><select value={catalogSort} onChange={(event) => setCatalogSort(event.target.value)}><option value="name-asc">ชื่อ ก–ฮ</option><option value="name-desc">ชื่อ ฮ–ก</option><option value="stock">มีสินค้าก่อน</option><option value="price-asc">ราคาต่ำ–สูง</option><option value="price-desc">ราคาสูง–ต่ำ</option></select></label>
           </div>
-          <div className="catalog-summary"><strong>{visibleProducts.length} รายการ</strong><span>สอบถามราคาปลีก–ส่งได้ทุกสินค้า</span></div>
-          {visibleProducts.length ? <div className="product-grid catalog-grid">
-            {visibleProducts.map(product => <article className="product-card" key={product.id}>
+          <div className="catalog-summary"><strong>{sortedProducts.length} รายการ</strong><span>{totalPages > 1 ? `หน้า ${catalogPage} จาก ${totalPages}` : 'สอบถามราคาปลีก–ส่งได้ทุกสินค้า'}</span></div>
+          {paginatedProducts.length ? <><div className="product-grid catalog-grid">
+            {paginatedProducts.map(product => <article className="product-card" key={product.id}>
               <div className="product-picture" style={{ background: productCardColors[product.id % productCardColors.length] }}>
                 <span className={`product-badge${product.in_stock ? '' : ' out-of-stock'}`}>{product.in_stock ? 'พร้อมจำหน่าย' : 'หมดชั่วคราว'}</span>
                 <ProductPicture product={product} />
                 <button aria-label={`สนใจ ${product.name}`}><HeartHandshake size={19} /></button>
               </div>
-              <div className="product-info"><small>{product.category}</small><h3>{product.name}</h3><p>{product.size}</p><a className="product-enquire" href="tel:0956699178">สอบถามราคา <ArrowRight size={16} /></a></div>
+              <div className="product-info"><small>{product.category}</small><h3>{product.name}</h3><p>{product.size}</p><strong className="product-price">{formatPrice(product.price)}</strong><div className="product-actions"><a className="product-detail" href={`/shop/product/${product.id}`}>ดูรายละเอียด <ArrowRight size={16} /></a><a className="product-enquire" href="tel:0956699178">โทรสอบถาม</a></div></div>
             </article>)}
-          </div> : <div className="catalog-empty"><Search size={30} /><h3>{products.length ? 'ไม่พบสินค้าที่ค้นหา' : (loadError ? 'โหลดรายการสินค้าไม่สำเร็จ' : 'กำลังโหลดสินค้า...')}</h3><p>{products.length ? 'ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น' : (loadError ? 'ลองรีเฟรชหน้าอีกครั้ง' : '')}</p></div>}
+          </div>{totalPages > 1 && <nav className="catalog-pagination" aria-label="เปลี่ยนหน้าสินค้า"><button disabled={catalogPage === 1} onClick={() => setCatalogPage((pageNumber) => pageNumber - 1)}><ArrowLeft size={17} />ก่อนหน้า</button><div>{Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => <button key={pageNumber} className={catalogPage === pageNumber ? 'active' : ''} onClick={() => setCatalogPage(pageNumber)}>{pageNumber}</button>)}</div><button disabled={catalogPage === totalPages} onClick={() => setCatalogPage((pageNumber) => pageNumber + 1)}>ถัดไป<ArrowRight size={17} /></button></nav>}</> : <div className="catalog-empty"><Search size={30} /><h3>{isLoading ? 'กำลังโหลดสินค้า...' : (loadError ? 'โหลดรายการสินค้าไม่สำเร็จ' : 'ไม่พบสินค้าที่ค้นหา')}</h3><p>{isLoading ? 'กรุณารอสักครู่' : (loadError ? 'ตรวจสอบการเชื่อมต่อแล้วลองใหม่อีกครั้ง' : 'ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น')}</p>{loadError && <button className="primary-button" onClick={loadCatalog}>ลองโหลดใหม่</button>}</div>}
         </section>
       </main>}
 
