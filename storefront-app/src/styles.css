@@ -1918,6 +1918,70 @@ footer {
     font-size: 12px;
     line-height: 1.6;
 }
+.detail-order-box {
+    margin: -8px 0 12px;
+    padding: 14px 15px;
+    border: 1px solid #f0e2e4;
+    border-radius: 15px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.detail-order-box > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.detail-order-box strong { font-size: 13px; }
+.detail-order-box small { color: #87919a; font-size: 10px; }
+.quantity-control {
+    height: 38px;
+    display: grid;
+    grid-template-columns: 38px 44px 38px;
+    border: 1px solid #f1ccd3;
+    border-radius: 11px;
+    overflow: hidden;
+}
+.quantity-control button {
+    border: 0;
+    background: #fff3f5;
+    color: var(--pink-dark);
+    display: grid;
+    place-items: center;
+}
+.quantity-control button:hover { background: #ffe5ea; }
+.quantity-control svg { width: 16px; }
+.quantity-control output {
+    display: grid;
+    place-items: center;
+    color: var(--navy);
+    font-weight: 700;
+    font-size: 13px;
+}
+.inquiry-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.inquiry-actions button {
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid #f1cbd2;
+    border-radius: 11px;
+    background: #fff;
+    color: var(--pink-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.inquiry-actions button:hover { background: #fff2f5; }
+.inquiry-actions svg { width: 17px; }
 .detail-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2116,6 +2180,9 @@ footer {
     .detail-actions {
         grid-template-columns: 1fr;
     }
+    .detail-order-box { align-items: flex-start; flex-direction: column; }
+    .quantity-control { width: 100%; grid-template-columns: 1fr 48px 1fr; }
+    .inquiry-actions { grid-template-columns: 1fr; }
     .detail-actions .primary-button {
         grid-column: auto;
     }

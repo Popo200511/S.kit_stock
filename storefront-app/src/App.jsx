@@ -1,7 +1,7 @@
 import {
-  ArrowLeft, ArrowRight, BadgeCheck, Bird, Bone, Cat, ChevronDown, CircleUserRound,
+  ArrowLeft, ArrowRight, BadgeCheck, Bird, Bone, Cat, ChevronDown, CircleUserRound, ClipboardCheck,
   Dog, Fish, HeartHandshake, LockKeyhole, Mail, MapPin, Menu, MessageCircle, PackageCheck, RefreshCcw,
-  PawPrint, Phone, Search, ShieldCheck, ShoppingBag, Truck, Wheat, X,
+  Minus, PawPrint, Phone, Plus, Search, Share2, ShieldCheck, ShoppingBag, Truck, Wheat, X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -46,6 +46,8 @@ function ProductDetailPage({ productId, products, formatPrice, onBack }) {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -64,6 +66,16 @@ function ProductDetailPage({ productId, products, formatPrice, onBack }) {
   if (error || !product) return <main className="detail-page"><div className="detail-state"><Search /><h1>ไม่พบสินค้านี้</h1><p>สินค้าอาจถูกย้ายหรือหยุดจำหน่ายชั่วคราว</p><button className="primary-button" onClick={onBack}>กลับไปดูสินค้าทั้งหมด</button></div></main>
 
   const related = products.filter((item) => item.id !== product.id && item.category === product.category).slice(0, 4)
+  const inquiryText = `สอบถามสินค้า: ${product.name}${product.size ? `\nขนาด: ${product.size}` : ''}\nจำนวน: ${quantity}\nราคา: ${formatPrice(product.price)}\nลิงก์สินค้า: ${window.location.href}`
+  const copyInquiry = async () => {
+    await navigator.clipboard.writeText(inquiryText)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 2200)
+  }
+  const shareInquiry = async () => {
+    if (navigator.share) await navigator.share({ title: product.name, text: inquiryText, url: window.location.href })
+    else await copyInquiry()
+  }
 
   return <main className="detail-page">
     <section className="detail-wrap">
@@ -84,6 +96,11 @@ function ProductDetailPage({ productId, products, formatPrice, onBack }) {
           {product.size && <p className="detail-size">ขนาด {product.size}</p>}
           <div className="detail-price-row"><strong>{formatPrice(product.price)}</strong><span className={product.in_stock ? 'in-stock' : 'out-stock'}>{product.in_stock ? 'พร้อมจำหน่าย' : 'หมดชั่วคราว'}</span></div>
           <div className="detail-notice"><HeartHandshake /><div><strong>สนใจสินค้านี้?</strong><p>โทรหรือทักหาร้านเพื่อเช็กราคา จำนวนคงเหลือ และค่าจัดส่งได้ทันที</p></div></div>
+          <div className="detail-order-box">
+            <div><strong>จำนวนที่ต้องการ</strong><small>ระบบจะใส่จำนวนนี้ในข้อความสอบถาม</small></div>
+            <div className="quantity-control"><button onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="ลดจำนวน"><Minus /></button><output>{quantity}</output><button onClick={() => setQuantity((value) => Math.min(999, value + 1))} aria-label="เพิ่มจำนวน"><Plus /></button></div>
+          </div>
+          <div className="inquiry-actions"><button onClick={copyInquiry}><ClipboardCheck /> {copied ? 'คัดลอกข้อความแล้ว' : 'คัดลอกข้อความสอบถาม'}</button><button onClick={shareInquiry}><Share2 /> แชร์รายการสินค้า</button></div>
           <div className="detail-actions">
             <a className="primary-button" href="tel:0956699178"><Phone size={19} /> โทร 095-669-9178</a>
             <a className="detail-facebook" href="https://www.facebook.com/search/top?q=ส.กิจการค้า" target="_blank" rel="noreferrer"><MessageCircle size={19} /> ทัก Facebook</a>
