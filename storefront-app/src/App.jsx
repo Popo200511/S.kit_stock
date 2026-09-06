@@ -170,8 +170,8 @@ function App() {
           <div className="section-heading"><div><span className="kicker">เลือกโดยลูกค้าประจำ</span><h2>สินค้าแนะนำ</h2></div><div className="mini-tabs"><button className="active">สินค้ายอดนิยม</button><button>มาใหม่</button></div></div>
           <div className="product-grid">
             {products.slice(0, 6).map((product, i) => <article className="product-card" key={product.id}>
-              <div className="product-picture" style={{ background: productCardColors[i % productCardColors.length] }}><ProductPicture product={product} /><button aria-label={`เพิ่ม ${product.name} ลงรายการ`}><HeartHandshake size={19} /></button></div>
-              <div className="product-info"><small>{product.category}</small><h3>{product.name}</h3><p>{product.size}</p><button onClick={() => scrollTo('contact')}>สอบถามราคา <ArrowRight size={16} /></button></div>
+              <div className="product-picture" style={{ background: productCardColors[i % productCardColors.length] }}><a className="product-photo-link" href={`/shop/product/${product.id}`} aria-label={`ดูรายละเอียด ${product.name}`}><ProductPicture product={product} /></a><a className="product-quick-link" href={`/shop/product/${product.id}`} aria-label={`ดู ${product.name}`}><HeartHandshake size={19} /></a></div>
+              <div className="product-info"><small>{product.category}</small><h3><a className="product-name-link" href={`/shop/product/${product.id}`}>{product.name}</a></h3><p>{product.size}</p><a className="product-detail" href={`/shop/product/${product.id}`}>ดูรายละเอียด <ArrowRight size={16} /></a></div>
             </article>)}
           </div>
           {!products.length && !loadError && <p className="product-loading-note">กำลังโหลดสินค้า...</p>}
@@ -230,10 +230,10 @@ function App() {
             {paginatedProducts.map(product => <article className="product-card" key={product.id}>
               <div className="product-picture" style={{ background: productCardColors[product.id % productCardColors.length] }}>
                 <span className={`product-badge${product.in_stock ? '' : ' out-of-stock'}`}>{product.in_stock ? 'พร้อมจำหน่าย' : 'หมดชั่วคราว'}</span>
-                <ProductPicture product={product} />
-                <button aria-label={`สนใจ ${product.name}`}><HeartHandshake size={19} /></button>
+                <a className="product-photo-link" href={`/shop/product/${product.id}`} aria-label={`ดูรายละเอียด ${product.name}`}><ProductPicture product={product} /></a>
+                <a className="product-quick-link" href={`/shop/product/${product.id}`} aria-label={`ดู ${product.name}`}><HeartHandshake size={19} /></a>
               </div>
-              <div className="product-info"><small>{product.category}</small><h3>{product.name}</h3><p>{product.size}</p><strong className="product-price">{formatPrice(product.price)}</strong><div className="product-actions"><a className="product-detail" href={`/shop/product/${product.id}`}>ดูรายละเอียด <ArrowRight size={16} /></a><a className="product-enquire" href="tel:0956699178">โทรสอบถาม</a></div></div>
+              <div className="product-info"><small>{product.category}</small><h3><a className="product-name-link" href={`/shop/product/${product.id}`}>{product.name}</a></h3><p>{product.size}</p><strong className="product-price">{formatPrice(product.price)}</strong><div className="product-actions"><a className="product-detail" href={`/shop/product/${product.id}`}>ดูรายละเอียด <ArrowRight size={16} /></a><a className="product-enquire" href="tel:0956699178">โทรสอบถาม</a></div></div>
             </article>)}
           </div>{totalPages > 1 && <nav className="catalog-pagination" aria-label="เปลี่ยนหน้าสินค้า"><button disabled={catalogPage === 1} onClick={() => setCatalogPage((pageNumber) => pageNumber - 1)}><ArrowLeft size={17} />ก่อนหน้า</button><div>{Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => <button key={pageNumber} className={catalogPage === pageNumber ? 'active' : ''} onClick={() => setCatalogPage(pageNumber)}>{pageNumber}</button>)}</div><button disabled={catalogPage === totalPages} onClick={() => setCatalogPage((pageNumber) => pageNumber + 1)}>ถัดไป<ArrowRight size={17} /></button></nav>}</> : <div className="catalog-empty"><Search size={30} /><h3>{isLoading ? 'กำลังโหลดสินค้า...' : (loadError ? 'โหลดรายการสินค้าไม่สำเร็จ' : 'ไม่พบสินค้าที่ค้นหา')}</h3><p>{isLoading ? 'กรุณารอสักครู่' : (loadError ? 'ตรวจสอบการเชื่อมต่อแล้วลองใหม่อีกครั้ง' : 'ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น')}</p>{loadError && <button className="primary-button" onClick={loadCatalog}>ลองโหลดใหม่</button>}</div>}
         </section>
