@@ -6,6 +6,7 @@ import 'aos/dist/aos.css'
 import './ui.css'
 import './styles.css'
 import './motion.css'
+import './product-cards.css'
 
 AOS.init({ duration: 500, easing: 'ease-out', once: true, offset: 40 })
 

@@ -1,0 +1,35 @@
+/* Compact catalog cards: six columns on wide screens, readable on mobile. */
+.product-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+.product-grid .product-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 6px #092a4a06;
+}
+.product-grid .product-card:hover { transform: translateY(-3px); }
+.product-grid .product-picture {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: 1;
+  padding: 6px;
+  flex-shrink: 0;
+}
+.product-grid .product-picture img { filter: none; mix-blend-mode: normal; }
+.product-grid .product-info { padding: 10px; }
+.product-grid .product-info > small { font-size: 11px; line-height: 16px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.product-grid .product-info h3 { margin: 4px 0; font-size: 13px; font-weight: 500; line-height: 20px; min-height: 40px; height: 40px; }
+.product-grid .product-info > p { font-size: 11px; line-height: 18px; min-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.product-grid .product-info > .product-price { font-size: 17px; line-height: 24px; margin: 5px 0; }
+.product-grid .product-info > .product-detail { padding-top: 8px; font-size: 11px; margin-top: auto; }
+.product-grid .product-actions { padding-top: 8px; gap: 6px; }
+.product-grid .product-actions .product-detail { font-size: 11px; }
+.product-grid .product-cart { min-height: 34px; border-radius: 6px; font-size: 11px; }
+.product-grid .product-quick-link { top: 7px; right: 7px; width: 30px; height: 30px; }
+@media (max-width: 1399px) { .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 959px) { .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 639px) {
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .product-grid .product-info { padding: 8px; }
+}
