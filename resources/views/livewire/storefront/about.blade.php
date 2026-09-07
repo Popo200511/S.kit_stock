@@ -25,7 +25,9 @@
             ['d' => 'M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z', 'title' => 'ใส่ใจทุกคำ', 'desc' => 'คัดสินค้าคุณภาพ ใส่ใจทุกออเดอร์ เพราะเข้าใจว่าสัตว์เลี้ยงคือคนสำคัญของคุณ'],
             ['d' => 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z', 'title' => 'พร้อมให้คำปรึกษา', 'desc' => 'ทักไลน์หรือโทรมาได้เลย ทีมงานยินดีช่วยแนะนำสินค้าที่เหมาะกับสัตว์เลี้ยงของคุณ'],
         ] as $item)
-            <div data-aos="fade-up" class="bg-surface border border-border rounded-2xl p-5 flex flex-col gap-2.5">
+            {{-- ไม่ใส่ data-aos — เจอแล้วว่าใน Livewire ตัวนี้ AOS ไม่ยอม reveal บนการโหลดหน้าแบบเต็ม
+            (ไม่ใช่ wire:navigate) บางครั้ง ค้างที่ opacity:0 ถาวร (เจอจริงที่หน้า login ที่ต้องแก้ไป) --}}
+            <div class="bg-surface border border-border rounded-2xl p-5 flex flex-col gap-2.5">
                 <span class="w-10 h-10 rounded-xl bg-accent-tint text-accent flex items-center justify-center">
                     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ $item['d'] }}"></path></svg>
                 </span>
