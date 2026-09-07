@@ -1,0 +1,40 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "tw-animate-css";
+
+/* Keep the existing storefront reset; only component utilities are imported. */
+.shop-category-menu { z-index: 1500; width: min(320px, calc(100vw - 32px)); max-height: min(480px, var(--radix-dropdown-menu-content-available-height)); padding: 8px; border: 1px solid #f1dde1; background: white; border-radius: 18px; box-shadow: 0 16px 40px #092a4a20; }
+.shop-category-menu [role="menuitem"] { display: flex; gap: 12px; padding: 12px; cursor: pointer; border-radius: 10px; outline: none; }
+.shop-category-menu [role="menuitem"][data-highlighted] { background: #fff0f3; color: #d83c60; }
+.shop-category-menu svg { width: 20px; height: 20px; flex-shrink: 0; color: #e95774; }
+.shop-category-menu strong, .shop-category-menu small { display: block; }
+.shop-category-menu strong { font-size: 14px; }
+.shop-category-menu small { font-size: 12px; color: #68747e; margin-top: 3px; }
+[data-slot="sheet-overlay"] { z-index: 1600; }
+.cart-drawer.shop-cart-sheet { position: fixed; z-index: 1601; width: min(470px, 100vw); max-width: 470px; height: 100dvh; gap: 0; animation: none; outline: none; }
+.shop-cart-sheet .cart-items { min-height: 0; }
+.shop-cart-sheet > header, .shop-cart-sheet .cart-summary { flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="sheet-content"], [data-slot="sheet-overlay"], .shop-category-menu { animation: none !important; transition: none !important; }
+}
+@theme inline {
+  --color-background: #fffaf8;
+  --color-foreground: #092a4a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #092a4a;
+  --color-primary: #e95774;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #fff0f3;
+  --color-secondary-foreground: #092a4a;
+  --color-muted: #fff0f3;
+  --color-muted-foreground: #68747e;
+  --color-accent: #fff0f3;
+  --color-accent-foreground: #092a4a;
+  --color-border: #f1dde1;
+  --color-input: #f1dde1;
+  --color-ring: #e95774;
+  --color-destructive: #bd3030;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+}

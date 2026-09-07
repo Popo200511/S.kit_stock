@@ -5,6 +5,8 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import AOS from 'aos'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './components/ui/dropdown-menu'
+import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription, SheetClose } from './components/ui/sheet'
 
 // การ์ดหมวดหมู่หน้าแรก — เป็นแค่ลิงก์ตกแต่งพาไปหน้าสินค้ารวม ไม่ใช่ตัวกรองจริง (ตัวกรองจริง
 // ที่หน้า "สินค้าทั้งหมด" ดึงชื่อประเภทจริงจากระบบมาแทน ดูตัวแปร categoryNames ด้านล่าง)
@@ -166,19 +168,11 @@ function App() {
   useEffect(() => {
     const dismiss = (event) => {
       if (event.type === 'keydown' && event.key !== 'Escape') return
-      if (event.type === 'keydown' || !event.target.closest('.nav-product-menu')) setCategoryDropdownOpen(false)
-      if (event.type === 'keydown') { setCartOpen(false); setMenuOpen(false); setSearchOpen(false); setContactOpen(false) }
+      if (event.type === 'keydown') { setMenuOpen(false); setSearchOpen(false); setContactOpen(false) }
     }
-    document.addEventListener('pointerdown', dismiss)
     document.addEventListener('keydown', dismiss)
-    return () => { document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', dismiss) }
+    return () => document.removeEventListener('keydown', dismiss)
   }, [])
-  useEffect(() => {
-    if (!cartOpen) return
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = previous }
-  }, [cartOpen])
 
    useEffect(() => {
     const handleScroll = () => setNavFixed(window.scrollY > 42)
@@ -264,7 +258,7 @@ function App() {
   }
 
   return (
-    <div className="site-shell">
+    <Sheet open={cartOpen} onOpenChange={setCartOpen}><div className="site-shell">
       <div className="announcement">
         <span><PawPrint size={15} /> อาหารสัตว์ดี มีคุณภาพ บริการด้วยใจ</span>
         <span className="announcement-perks">จัดส่งทั่วประเทศ · จำหน่ายปลีกและส่ง</span>
@@ -278,11 +272,13 @@ function App() {
         <nav className={menuOpen ? 'nav-links is-open' : 'nav-links'}>
           <button className={`nav-home-link${page === 'home' ? ' active' : ''}`} onClick={() => openPage('home')}>หน้าแรก</button>
           <div className={`nav-product-menu${categoryDropdownOpen ? ' is-open' : ''}`}>
-            <button className={`nav-product-trigger${page !== 'home' ? ' active' : ''}`} onClick={() => setCategoryDropdownOpen((open) => !open)} aria-expanded={categoryDropdownOpen}>สินค้า <ChevronDown size={15} /></button>
-            {categoryDropdownOpen && <div className="nav-product-dropdown">
-              <button onClick={() => openCategory('ทั้งหมด')}><ShoppingBag /> <span><strong>สินค้าทั้งหมด</strong><small>ดูสินค้าทุกหมวดหมู่</small></span></button>
-              {categoryNames.map((category) => <button key={category} onClick={() => openCategory(category)}><PawPrint /><span><strong>{category}</strong><small>เลือกดูสินค้าในหมวดนี้</small></span></button>)}
-            </div>}
+            <DropdownMenu open={categoryDropdownOpen} onOpenChange={setCategoryDropdownOpen} modal={false}>
+              <DropdownMenuTrigger asChild><button className={`nav-product-trigger${page !== 'home' ? ' active' : ''}`}>สินค้า <ChevronDown size={15} /></button></DropdownMenuTrigger>
+              <DropdownMenuContent className="shop-category-menu" align="start" sideOffset={12} collisionPadding={16}>
+                <DropdownMenuItem onSelect={() => openCategory('ทั้งหมด')}><ShoppingBag /><span><strong>สินค้าทั้งหมด</strong><small>ดูสินค้าทุกหมวดหมู่</small></span></DropdownMenuItem>
+                {categoryNames.map((category) => <DropdownMenuItem key={category} onSelect={() => openCategory(category)}><PawPrint /><span><strong>{category}</strong><small>เลือกดูสินค้าในหมวดนี้</small></span></DropdownMenuItem>)}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <button onClick={() => scrollTo('recommended')}>สินค้าแนะนำ</button>
           <button onClick={() => scrollTo('about')}>เกี่ยวกับเรา</button>
@@ -291,7 +287,7 @@ function App() {
         <div className="nav-actions">
           <button className="icon-button" onClick={() => setSearchOpen(!searchOpen)} aria-label="ค้นหา"><Search /></button>
           <button className="icon-button hide-mobile" aria-label="บัญชีผู้ใช้"><CircleUserRound /></button>
-          <button className="bag-button" onClick={() => setCartOpen(true)} aria-label={`ตะกร้าสินค้า ${cartCount} รายการ`}><ShoppingBag /><span>{cartCount}</span></button>
+          <SheetTrigger asChild><button className="bag-button" aria-label={`ตะกร้าสินค้า ${cartCount} รายการ`}><ShoppingBag /><span>{cartCount}</span></button></SheetTrigger>
           <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="เปิดเมนู">{menuOpen ? <X /> : <Menu />}</button>
         </div>
         {searchOpen && <form className="search-panel" onSubmit={(event) => { event.preventDefault(); setCatalogFilter('ทั้งหมด'); openPage('products'); setSearchOpen(false) }}><Search size={19} /><input autoFocus aria-label="ค้นหาสินค้า" value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="ค้นหาอาหารสัตว์หรืออุปกรณ์..." /><button type="submit">ค้นหา</button></form>}
@@ -392,10 +388,8 @@ function App() {
         <div className="footer-bottom"><span>© 2026 ส.กิจการค้า</span><span>เลขที่ใบอนุญาตขายอาหารสัตว์ 62410000300252</span></div>
       </footer>
 
-      {cartOpen && <div className="cart-layer" role="dialog" aria-modal="true" aria-label="ตะกร้าสินค้า">
-        <button className="cart-backdrop" onClick={() => setCartOpen(false)} aria-label="ปิดตะกร้า" />
-        <aside className="cart-drawer">
-          <header><div><span className="kicker">รายการที่สนใจ</span><h2>ตะกร้าสินค้า <small>{cartCount} ชิ้น</small></h2></div><button onClick={() => setCartOpen(false)} aria-label="ปิด"><X /></button></header>
+      <SheetContent className="cart-drawer shop-cart-sheet" showCloseButton={false}>
+          <header><div><span className="kicker">รายการที่สนใจ</span><SheetTitle>ตะกร้าสินค้า <small>{cartCount} ชิ้น</small></SheetTitle><SheetDescription className="sr-only">ตรวจสอบรายการและจำนวนสินค้าก่อนสอบถามร้าน</SheetDescription></div><SheetClose asChild><button aria-label="ปิดตะกร้า"><X /></button></SheetClose></header>
           <div className="cart-items">
             {cart.length ? cart.map((item) => <article className="cart-item" key={item.id}>
               <a className="cart-thumb" href={`/shop/product/${item.id}`}><ProductPicture product={item} /></a>
@@ -403,8 +397,7 @@ function App() {
             </article>) : <div className="cart-empty"><ShoppingBag /><h3>ตะกร้ายังว่างอยู่</h3><p>เลือกสินค้าที่สนใจ แล้วส่งรายการให้ร้านเช็กราคาได้เลย</p><button className="primary-button" onClick={() => { setCartOpen(false); openPage('products') }}>เลือกดูสินค้า</button></div>}
           </div>
           {cart.length > 0 && <div className="cart-summary"><div><span>รวมโดยประมาณ</span><strong>{cartTotal > 0 ? formatPrice(cartTotal) : 'สอบถามราคา'}</strong></div><small>ราคานี้ยังไม่รวมค่าจัดส่ง กรุณายืนยันกับทางร้านอีกครั้ง</small><button className="cart-primary" onClick={copyCart}><ClipboardCheck /> {cartCopied ? 'คัดลอกรายการแล้ว' : 'คัดลอกรายการสอบถาม'}</button><button className="cart-secondary" onClick={shareCart}><Share2 /> แชร์รายการ</button></div>}
-        </aside>
-      </div>}
+      </SheetContent>
 
       <nav className={`floating-contact${contactOpen ? ' expanded' : ''}`} aria-label="ช่องทางติดต่อด่วน">
         <button className="contact-toggle" aria-expanded={contactOpen} onClick={() => setContactOpen((open) => !open)}>{contactOpen ? <X /> : <MessageCircle />} ติดต่อร้าน</button>
@@ -413,7 +406,7 @@ function App() {
         <a className="float-shopee" href="https://shopee.co.th/shop/1789277286" target="_blank" rel="noreferrer" aria-label="ร้านใน Shopee"><ShoppingBag /></a>
         <a className="float-map" href="https://maps.app.goo.gl/YLaEaMjqeYFKG2uP8" target="_blank" rel="noreferrer" aria-label="เปิดแผนที่ร้าน"><MapPin /></a>
       </nav>
-    </div>
+    </div></Sheet>
   )
 }
 
