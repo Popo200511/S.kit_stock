@@ -136,7 +136,7 @@ button {
     padding: 12px 0;
     font-size: 14px;
 }
-.nav-links > .nav-home-link {
+.nav-links > .nav-home-link.active {
     color: var(--pink-dark);
     font-weight: 600;
     border-bottom: 2px solid var(--pink);
@@ -1259,6 +1259,7 @@ footer {
     font: inherit;
 }
 .catalog-filters {
+    min-width: 0;
     grid-column: 1/-1;
     display: flex;
     gap: 8px;
@@ -1803,6 +1804,31 @@ footer {
 .product-info > p { min-height: 20px; }
 .product-info > .product-price { margin-top: 8px; }
 .product-info > .product-actions { margin-top: auto; }
+
+/* Keep replaced images inside a definite-size box, including tall originals. */
+.product-picture { display: block; }
+.product-photo-link { display: flex; min-width: 0; min-height: 0; overflow: hidden; align-items: center; justify-content: center; }
+.product-photo-link img { min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; object-fit: contain; }
+.detail-picture { display: flex; align-items: center; justify-content: center; }
+.detail-picture img { min-width: 0; min-height: 0; }
+.nav-links .nav-product-trigger.active { color: var(--pink-dark); border-bottom: 2px solid var(--pink); }
+.search-panel input { min-width: 0; }
+.search-panel button { border: 0; border-radius: 8px; background: var(--pink-dark); color: white; padding: 8px 12px; }
+.product-info h3 { line-height: 1.5; font-size: 16px; }
+.product-actions { padding-bottom: 2px; }
+.product-actions .product-enquire { display: none; }
+.product-cart,.add-cart-button { background: var(--pink-dark); border-color: var(--pink-dark); }
+.contact-toggle { display: none; }
+:is(button,a,input,select):focus-visible { outline: 3px solid #e95774; outline-offset: 3px; }
+@media(max-width:560px) {
+  .floating-contact { flex-direction: column; align-items: flex-end; }
+  .floating-contact a { display: none; }
+  .floating-contact.expanded a { display: grid; }
+  .contact-toggle { display: flex; align-items: center; gap: 8px; border: 0; border-radius: 24px; padding: 12px 16px; background: var(--pink-dark); color: white; box-shadow: 0 4px 18px #092a4a24; order: 1; }
+  .nav-actions .icon-button { display: grid; }
+  .nav-actions .hide-mobile { display: none; }
+  .search-panel { right: 12px; }
+}
 @media (max-width: 560px) {
     .product-picture {
         height: 200px;

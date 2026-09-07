@@ -125,6 +125,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
   const [navFixed, setNavFixed] = useState(false)
   const [page, setPage] = useState(productRoute ? 'detail' : 'home')
   const [catalogFilter, setCatalogFilter] = useState('ทั้งหมด')
@@ -160,7 +161,23 @@ function App() {
   }
 
   useEffect(() => { loadCatalog() }, [])
-  useEffect(() => { localStorage.setItem('s-kij-cart', JSON.stringify(cart)) }, [cart])
+  useEffect(() => { try { localStorage.setItem('s-kij-cart', JSON.stringify(cart)) } catch {} }, [cart])
+  useEffect(() => {
+    const dismiss = (event) => {
+      if (event.type === 'keydown' && event.key !== 'Escape') return
+      if (event.type === 'keydown' || !event.target.closest('.nav-product-menu')) setCategoryDropdownOpen(false)
+      if (event.type === 'keydown') { setCartOpen(false); setMenuOpen(false); setSearchOpen(false); setContactOpen(false) }
+    }
+    document.addEventListener('pointerdown', dismiss)
+    document.addEventListener('keydown', dismiss)
+    return () => { document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', dismiss) }
+  }, [])
+  useEffect(() => {
+    if (!cartOpen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previous }
+  }, [cartOpen])
 
    useEffect(() => {
     const handleScroll = () => setNavFixed(window.scrollY > 42)
@@ -254,9 +271,9 @@ function App() {
           <span><strong>ส.กิจการค้า</strong><small>ศูนย์รวมอาหารสัตว์คุณภาพ</small></span>
         </button>
         <nav className={menuOpen ? 'nav-links is-open' : 'nav-links'}>
-          <button className="nav-home-link" onClick={() => openPage('home')}>หน้าแรก</button>
+          <button className={`nav-home-link${page === 'home' ? ' active' : ''}`} onClick={() => openPage('home')}>หน้าแรก</button>
           <div className={`nav-product-menu${categoryDropdownOpen ? ' is-open' : ''}`}>
-            <button className="nav-product-trigger" onClick={() => setCategoryDropdownOpen((open) => !open)} aria-expanded={categoryDropdownOpen}>สินค้า <ChevronDown size={15} /></button>
+            <button className={`nav-product-trigger${page !== 'home' ? ' active' : ''}`} onClick={() => setCategoryDropdownOpen((open) => !open)} aria-expanded={categoryDropdownOpen}>สินค้า <ChevronDown size={15} /></button>
             {categoryDropdownOpen && <div className="nav-product-dropdown">
               <button onClick={() => openCategory('ทั้งหมด')}><ShoppingBag /> <span><strong>สินค้าทั้งหมด</strong><small>ดูสินค้าทุกหมวดหมู่</small></span></button>
               {categoryNames.map((category) => <button key={category} onClick={() => openCategory(category)}><PawPrint /><span><strong>{category}</strong><small>เลือกดูสินค้าในหมวดนี้</small></span></button>)}
@@ -272,7 +289,7 @@ function App() {
           <button className="bag-button" onClick={() => setCartOpen(true)} aria-label={`ตะกร้าสินค้า ${cartCount} รายการ`}><ShoppingBag /><span>{cartCount}</span></button>
           <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="เปิดเมนู">{menuOpen ? <X /> : <Menu />}</button>
         </div>
-        {searchOpen && <div className="search-panel"><Search size={19} /><input autoFocus placeholder="ค้นหาอาหารสัตว์หรืออุปกรณ์..." /></div>}
+        {searchOpen && <form className="search-panel" onSubmit={(event) => { event.preventDefault(); setCatalogFilter('ทั้งหมด'); openPage('products'); setSearchOpen(false) }}><Search size={19} /><input autoFocus aria-label="ค้นหาสินค้า" value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="ค้นหาอาหารสัตว์หรืออุปกรณ์..." /><button type="submit">ค้นหา</button></form>}
       </header>
       {navFixed && <div className="navbar-spacer" aria-hidden="true" />}
 
@@ -384,7 +401,8 @@ function App() {
         </aside>
       </div>}
 
-      <nav className="floating-contact" aria-label="ช่องทางติดต่อด่วน">
+      <nav className={`floating-contact${contactOpen ? ' expanded' : ''}`} aria-label="ช่องทางติดต่อด่วน">
+        <button className="contact-toggle" aria-expanded={contactOpen} onClick={() => setContactOpen((open) => !open)}>{contactOpen ? <X /> : <MessageCircle />} ติดต่อร้าน</button>
         <a className="float-phone" href="tel:0956699178" aria-label="โทรหาร้าน"><Phone /></a>
         <a className="float-facebook" href="https://www.facebook.com/search/top?q=ส.กิจการค้า" target="_blank" rel="noreferrer" aria-label="Facebook ส.กิจการค้า"><MessageCircle /></a>
         <a className="float-shopee" href="https://shopee.co.th/shop/1789277286" target="_blank" rel="noreferrer" aria-label="ร้านใน Shopee"><ShoppingBag /></a>
