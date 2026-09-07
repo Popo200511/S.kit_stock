@@ -8,12 +8,13 @@ use Tests\TestCase;
 class ExampleTest extends TestCase
 {
     /**
-     * Guests are redirected to the login page.
+     * The root domain is the public storefront — guests land there, not on
+     * the staff login page.
      */
-    public function test_the_application_redirects_guests_to_login(): void
+    public function test_the_application_redirects_guests_to_the_shop(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect(route('login'));
+        $response->assertRedirect(route('shop.index'));
     }
 }

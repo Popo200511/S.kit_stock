@@ -32,12 +32,13 @@ $pageComponents = [
     'users.index' => Users\Index::class,
 ];
 
-// หน้าแรกสุด "/" ไม่มีเนื้อหาของตัวเอง แค่เด้งต่อ: login แล้วไปหน้า landing
-// ตามสิทธิ์ของ user ถ้ายังไม่ login ก็เด้งไปหน้า login
+// หน้าแรกสุด "/" ไม่มีเนื้อหาของตัวเอง แค่เด้งต่อ — ลูกค้าทั่วไป (ยังไม่ login) เด้งไปหน้าร้าน
+// /shop เลย เพราะโดเมนหลักคือหน้าร้านของลูกค้า ส่วนพนักงานที่ login ค้างอยู่แล้วเด้งไปหน้า
+// landing ตามสิทธิ์ตามเดิม (จะได้ไม่ต้องเข้าหน้าร้านทุกครั้งที่เปิดเว็บระหว่างทำงาน)
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route(auth()->user()->landingRoute())
-        : redirect()->route('login');
+        : redirect()->route('shop.index');
 });
 
 // หน้า login ครอบด้วย middleware 'guest' คือเข้าได้เฉพาะคนที่ยังไม่ login
