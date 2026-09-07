@@ -232,7 +232,7 @@ function App() {
   useEffect(() => { setCatalogPage(1) }, [catalogFilter, catalogSearch, catalogSort])
 
   const formatPrice = (price) => Number(price) > 0
-    ? new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(price)
+    ? `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(price)} บาท`
     : 'สอบถามราคา'
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0)
