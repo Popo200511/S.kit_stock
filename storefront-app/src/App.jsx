@@ -4,6 +4,7 @@ import {
   Minus, PawPrint, Phone, Plus, Search, Share2, ShieldCheck, ShoppingBag, Truck, Wheat, X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import AOS from 'aos'
 
 // การ์ดหมวดหมู่หน้าแรก — เป็นแค่ลิงก์ตกแต่งพาไปหน้าสินค้ารวม ไม่ใช่ตัวกรองจริง (ตัวกรองจริง
 // ที่หน้า "สินค้าทั้งหมด" ดึงชื่อประเภทจริงจากระบบมาแทน ดูตัวแปร categoryNames ด้านล่าง)
@@ -230,6 +231,10 @@ function App() {
   const paginatedProducts = sortedProducts.slice((catalogPage - 1) * pageSize, catalogPage * pageSize)
 
   useEffect(() => { setCatalogPage(1) }, [catalogFilter, catalogSearch, catalogSort])
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => AOS.refreshHard())
+    return () => cancelAnimationFrame(frame)
+  }, [page, products, catalogFilter, catalogSearch, catalogSort, catalogPage])
 
   const formatPrice = (price) => Number(price) > 0
     ? `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(price)} บาท`
@@ -302,14 +307,14 @@ function App() {
           </section>
         </section>
 
-        <section className="section categories-section" id="categories">
+        <section className="section categories-section" id="categories" data-aos="fade-up">
           <div className="section-heading"><div><span className="kicker">เลือกง่าย ได้ของที่ใช่</span><h2>หมวดหมู่สินค้า</h2></div><button className="text-link" onClick={() => openPage('products')}>ดูสินค้าทั้งหมด <ArrowRight size={17} /></button></div>
           <div className="category-grid">
             {categoryCards.map(({ name, caption, icon: Icon, tint, image, position }) => <button className="category-card" key={name} onClick={() => openPage('products')} style={{ '--tint': tint }}><span className={`category-icon${image ? ' has-photo' : ''}`}>{image ? <img src={image} alt={name} style={{ objectPosition: position }} /> : <Icon />}</span><span><strong>{name}</strong><small>{caption}</small></span><ArrowRight className="card-arrow" size={18} /></button>)}
           </div>
         </section>
 
-        <section className="section product-section" id="recommended">
+        <section className="section product-section" id="recommended" data-aos="fade-up">
           <div className="section-heading"><div><span className="kicker">เลือกโดยลูกค้าประจำ</span><h2>สินค้าแนะนำ</h2></div><div className="mini-tabs"><button className="active">สินค้ายอดนิยม</button><button>มาใหม่</button></div></div>
           <div className="product-grid">
             {products.slice(0, 6).map((product, i) => <article className="product-card" key={product.id}>
@@ -321,34 +326,34 @@ function App() {
           {loadError && <p className="product-loading-note">โหลดรายการสินค้าไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง</p>}
         </section>
 
-        <section className="sales-section" aria-label="บริการจำหน่ายปลีกและส่ง">
+        <section className="sales-section" aria-label="บริการจำหน่ายปลีกและส่ง" data-aos="fade-up">
           <div className="sales-card sales-retail"><span className="sales-label">สำหรับเจ้าของสัตว์เลี้ยง</span><h2>ซื้อปลีก เลือกง่าย<br />มีของพร้อมส่ง</h2><p>เลือกสินค้ายอดนิยม หรือสอบถามอาหารที่เหมาะกับน้องได้โดยตรงกับร้าน</p><button className="primary-button" onClick={() => openPage('products')}>ดูสินค้าทั้งหมด <ArrowRight size={18} /></button></div>
           <div className="sales-card sales-wholesale"><span className="sales-label">สำหรับร้านค้าและฟาร์ม</span><h2>สั่งหลายถุง<br />สอบถามราคาส่ง</h2><p>แจ้งรายการสินค้าและจำนวนที่ต้องการ เพื่อให้ทางร้านช่วยเช็กราคาและค่าจัดส่ง</p><a className="white-button" href="tel:0956699178"><Phone size={18} />โทร 095-669-9178</a></div>
         </section>
 
-        <section className="brands-section" aria-labelledby="brands-title">
+        <section className="brands-section" aria-labelledby="brands-title" data-aos="fade-up">
           <div className="section-heading"><div><span className="kicker">แบรนด์ที่ลูกค้าคุ้นเคย</span><h2 id="brands-title">แบรนด์ที่มีจำหน่าย</h2></div><a className="text-link" href="https://shopee.co.th/shop/1789277286" target="_blank" rel="noreferrer">ดูหน้าร้าน Shopee <ArrowRight size={17} /></a></div>
           <div className="brand-list">{brands.map((brand) => <span key={brand}>{brand}</span>)}</div>
         </section>
 
-        <section className="reviews-section" aria-labelledby="reviews-title">
+        <section className="reviews-section" aria-labelledby="reviews-title" data-aos="fade-up">
           <div><span className="kicker light">เช็กรีวิวและสินค้าจริง</span><h2 id="reviews-title">ดูความเคลื่อนไหวของร้าน<br />ก่อนตัดสินใจสั่งซื้อ</h2><p>ติดตามสินค้าเข้าใหม่ รีวิว และสอบถามรายละเอียดเพิ่มเติมผ่านช่องทางร้านโดยตรง</p></div>
           <div className="review-links"><a href="https://www.facebook.com/search/top?q=ส.กิจการค้า" target="_blank" rel="noreferrer"><MessageCircle size={22} /><span><strong>Facebook</strong><small>ส.กิจการค้า</small></span><ArrowRight size={18} /></a><a href="https://shopee.co.th/shop/1789277286" target="_blank" rel="noreferrer"><ShoppingBag size={22} /><span><strong>Shopee</strong><small>ดูสินค้าและรีวิวจากผู้ซื้อ</small></span><ArrowRight size={18} /></a></div>
         </section>
 
-        <section className="about-section" id="about">
+        <section className="about-section" id="about" data-aos="fade-up">
           <div className="about-card">
             <div className="about-mark"><img src="/assets/s-kij-logo.png" alt="ตราร้าน ส.กิจการค้า" /></div>
             <div className="about-copy"><span className="kicker">รู้จัก ส.กิจการค้า</span><h2>เราเชื่อว่าอาหารที่ดี<br />คือจุดเริ่มต้นของสุขภาพที่ดี</h2><p>เราคัดสรรอาหารสัตว์หลากหลายประเภท เพื่อให้เจ้าของสัตว์เลี้ยงและเกษตรกรเลือกสินค้าที่เหมาะสมได้สะดวก พร้อมบริการแบบเป็นกันเองและจริงใจในทุกออเดอร์</p><div className="about-stats"><span><strong>30+</strong> กลุ่มสินค้า</span><span><strong>ปลีก–ส่ง</strong> รองรับทุกความต้องการ</span><span><strong>ทั่วไทย</strong> พร้อมจัดส่ง</span></div></div>
           </div>
         </section>
 
-        <section className="contact-banner" id="contact">
+        <section className="contact-banner" id="contact" data-aos="fade-up">
           <div><span className="kicker light">ต้องการคำแนะนำ?</span><h2>ทักมาคุยกับเราได้เลย</h2><p>แจ้งชนิดสัตว์ อายุ และความต้องการ ทีมงานจะช่วยแนะนำสินค้าให้เหมาะสม</p><div className="contact-details"><a href="https://maps.app.goo.gl/YLaEaMjqeYFKG2uP8" target="_blank" rel="noreferrer"><MapPin size={17} />369 หมู่ 1 ต.ศรีสุทโธ อ.บ้านดุง จ.อุดรธานี 41190</a><a href="mailto:swisuttiya1@gmail.com"><Mail size={17} />swisuttiya1@gmail.com</a></div></div>
           <div className="contact-actions"><a className="white-button" href="tel:0956699178"><Phone size={18} />095-669-9178</a><a className="outline-button" href="https://www.facebook.com/search/top?q=ส.กิจการค้า" target="_blank" rel="noreferrer"><MessageCircle size={18} />Facebook</a><a className="shopee-button" href="https://shopee.co.th/shop/1789277286?uls_trackid=56hnr8le002p&utm_content=58CnmyeXriKScXfSwoPfG69XgsZ" target="_blank" rel="noreferrer"><ShoppingBag size={18} />ร้านใน Shopee</a></div>
         </section>
 
-        <section className="store-location" aria-labelledby="store-location-title">
+        <section className="store-location" aria-labelledby="store-location-title" data-aos="fade-up">
           <div className="location-copy"><span className="kicker">ที่ตั้งร้าน ส.กิจการค้า</span><h2 id="store-location-title">แวะมาหาเราได้ที่บ้านดุง</h2><p><MapPin size={19} />369 หมู่ 1 ต.ศรีสุทโธ อ.บ้านดุง จ.อุดรธานี 41190</p><a className="primary-button" href="https://maps.app.goo.gl/YLaEaMjqeYFKG2uP8" target="_blank" rel="noreferrer"><MapPin size={18} />เปิดใน Google Maps</a></div>
           <div className="map-frame"><iframe title="แผนที่ร้าน ส.กิจการค้า" src="https://www.google.com/maps?q=17.6976687,103.2576179&z=18&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /></div>
         </section>

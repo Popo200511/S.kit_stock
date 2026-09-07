@@ -1,0 +1,9 @@
+/* Keep every section readable when motion is reduced or when printing. */
+@media (prefers-reduced-motion: reduce), print {
+  [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    pointer-events: auto !important;
+  }
+}
