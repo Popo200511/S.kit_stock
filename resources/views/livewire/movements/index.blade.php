@@ -451,7 +451,7 @@
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-[12.5px] font-medium text-text2">{{ $form['type'] === 'in' ? 'ผู้จำหน่าย' : 'ผู้รับสินค้า' }}</label>
-                        <input type="text" wire:model="form.party" placeholder="ชื่อคู่ค้า / ลูกค้า" class="border border-border3 rounded-[10px] px-3 py-2.5 text-[13.5px] focus:border-accent focus:ring-0 focus:outline-none">
+                        <x-combobox field="form.party" :options="$partyOptions" placeholder="ชื่อคู่ค้า / ลูกค้า" :creatable="true" :free-text="true" />
                     </div>
                 </div>
 
@@ -631,7 +631,7 @@
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label class="text-[12.5px] font-medium text-text2">{{ $editingLine->stockMovement->type === 'in' ? 'ผู้จำหน่าย' : 'ผู้รับสินค้า' }}</label>
-                        <input type="text" wire:model="editForm.party" placeholder="ชื่อคู่ค้า / ลูกค้า" class="border border-border3 rounded-[10px] px-3 py-2.5 text-[13.5px] focus:border-accent focus:ring-0 focus:outline-none">
+                        <x-combobox field="editForm.party" :options="$partyOptions" placeholder="ชื่อคู่ค้า / ลูกค้า" :creatable="true" :free-text="true" />
                     </div>
                 </div>
 

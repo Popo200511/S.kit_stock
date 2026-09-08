@@ -1298,6 +1298,17 @@ class Index extends Component
             default => $this->selectedMonth === now()->format('Y-m'),
         };
 
+        // รายชื่อคู่ค้า/ลูกค้าให้เลือกในช่อง "ผู้จำหน่าย" — เริ่มด้วย CPF กับร้านสถาพรตามที่ตกลงไว้
+        // เสมอ (แม้ยังไม่เคยมีเอกสารใช้ชื่อนี้มาก่อน) รวมกับชื่อที่เคยกรอกไว้จริงในเอกสารเก่าๆ
+        // ไม่ซ้ำกัน — พิมพ์ชื่อใหม่ที่ไม่มีในรายการได้เลย (โหมด free text ของ x-combobox)
+        $partyOptions = collect(['CPF', 'ร้านสถาพร'])
+            ->merge(StockMovement::whereNotNull('party')->where('party', '!=', '')->distinct()->pluck('party'))
+            ->unique()
+            ->sort()
+            ->values()
+            ->map(fn ($p) => ['value' => $p, 'label' => $p])
+            ->all();
+
         return view('livewire.movements.index', [
             'lines' => $lines,
             'hasMoreRows' => $lines->hasMorePages(),
@@ -1311,6 +1322,7 @@ class Index extends Component
                 ->map(fn ($c) => ['value' => (string) $c->id, 'label' => $c->name])->values()->all(),
             'lineUnitOptions' => Unit::orderBy('name')->get(['id', 'name'])
                 ->map(fn ($u) => ['value' => (string) $u->id, 'label' => $u->name])->values()->all(),
+            'partyOptions' => $partyOptions,
             'docMovement' => $this->docMovementId ? StockMovement::with(['lines.product', 'lines.variant', 'user'])->find($this->docMovementId) : null,
             'deleteLine' => $this->confirmDeleteLineId ? StockMovementLine::with('stockMovement')->find($this->confirmDeleteLineId) : null,
             'editingLine' => $this->editingLineId ? StockMovementLine::with('stockMovement')->find($this->editingLineId) : null,
