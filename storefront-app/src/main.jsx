@@ -7,6 +7,7 @@ import './ui.css'
 import './styles.css'
 import './motion.css'
 import './product-cards.css'
+import './catalog-toolbar.css'
 
 AOS.init({ duration: 500, easing: 'ease-out', once: true, offset: 40 })
 

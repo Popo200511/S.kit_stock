@@ -362,13 +362,12 @@ function App() {
           <a className="catalog-shopee" href="https://shopee.co.th/shop/1789277286?uls_trackid=56hnr8le002p&utm_content=58CnmyeXriKScXfSwoPfG69XgsZ" target="_blank" rel="noreferrer"><ShoppingBag size={19} />เลือกซื้อสินค้าบน Shopee <ArrowRight size={17} /></a>
         </section>
         <section className="catalog-content">
-          <div className="catalog-toolbar">
-            <div className="catalog-search"><Search size={20} /><input value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="ค้นหาชื่อสินค้า แบรนด์ หรือขนาด..." /></div>
-            <div className="catalog-filters" aria-label="กรองประเภทสินค้า">
-              {catalogFilters.map((filter) => <button key={filter} className={catalogFilter === filter ? 'active' : ''} onClick={() => setCatalogFilter(filter)}>{filter}</button>)}
-            </div>
+          <div className="catalog-toolbar catalog-toolbar-clean">
+            <label className="catalog-search-field"><span>ค้นหาสินค้า</span><div className="catalog-search"><Search size={19} /><input value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="ชื่อสินค้า แบรนด์ หรือขนาด..." /></div></label>
+            <label className="catalog-category-field"><span>หมวดหมู่สินค้า</span><select value={catalogFilter} onChange={(event) => setCatalogFilter(event.target.value)}>{catalogFilters.map((filter) => <option key={filter} value={filter}>{filter === 'ทั้งหมด' ? 'ทุกหมวดหมู่' : filter}</option>)}</select></label>
             <label className="catalog-sort"><span>เรียงตาม</span><select value={catalogSort} onChange={(event) => setCatalogSort(event.target.value)}><option value="name-asc">ชื่อ ก–ฮ</option><option value="name-desc">ชื่อ ฮ–ก</option><option value="stock">มีสินค้าก่อน</option><option value="price-asc">ราคาต่ำ–สูง</option><option value="price-desc">ราคาสูง–ต่ำ</option></select></label>
           </div>
+          {(catalogFilter !== 'ทั้งหมด' || catalogSearch.trim()) && <div className="catalog-active-filters"><span>กำลังแสดง: {catalogFilter === 'ทั้งหมด' ? 'ทุกหมวดหมู่' : catalogFilter}{catalogSearch.trim() && ` · “${catalogSearch.trim()}”`}</span><button onClick={() => { setCatalogFilter('ทั้งหมด'); setCatalogSearch('') }}><X size={14} />ล้างตัวกรอง</button></div>}
           <div className="catalog-summary"><strong>{sortedProducts.length} รายการ</strong><span>{totalPages > 1 ? `หน้า ${catalogPage} จาก ${totalPages}` : 'สอบถามราคาปลีก–ส่งได้ทุกสินค้า'}</span></div>
           {paginatedProducts.length ? <><div className="product-grid catalog-grid">
             {paginatedProducts.map(product => <article className="product-card" key={product.id}>
