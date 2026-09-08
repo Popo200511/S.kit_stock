@@ -430,6 +430,10 @@ class Index extends Component
         if ($this->photo) {
             \Illuminate\Support\Facades\Validator::make(['photo' => $this->photo], [
                 'photo' => 'image|mimes:jpg,jpeg,png,webp|max:4096',
+            ], [
+                'photo.image' => 'ไฟล์ที่เลือกไม่ใช่รูปภาพ',
+                'photo.mimes' => 'รูปภาพต้องเป็นไฟล์ .jpg, .jpeg, .png หรือ .webp',
+                'photo.max' => 'ไฟล์รูปใหญ่เกินไป (สูงสุด 4MB) กรุณาลดขนาดไฟล์แล้วลองใหม่',
             ])->validate();
 
             if ($this->editingId && $this->existingPhotoPath) {
