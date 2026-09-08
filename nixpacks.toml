@@ -1,0 +1,15 @@
+# วิธีที่ Nixpacks (ที่ Railway ใช้ build โปรเจกต์นี้) รู้จักจริงๆ สำหรับปรับค่า php.ini —
+# ไฟล์ php.ini เปล่าๆ ที่วางไว้ root โปรเจกต์ก่อนหน้านี้ (ดู commit fe72cf2) ไม่ได้ถูก
+# Nixpacks หยิบไปรวมอัตโนมัติแบบที่คอมเมนต์ในไฟล์นั้นอ้างไว้ — ทดสอบแล้วว่าอัปโหลดรูปสินค้า
+# ที่ใหญ่กว่า ~2MB ยังโดนบล็อกอยู่แม้ push ไฟล์นั้นไปแล้ว (ดีฟอลต์ของ Nixpacks PHP คือ
+# upload_max_filesize=2M, post_max_size=8M)
+#
+# ที่มา: https://station.railway.com/questions/increase-max-file-upload-with-php-nixpac-8e47f9b1
+# คำสั่งนี้หาโฟลเดอร์ php.ini จริงที่ Nixpacks build ไว้ใน Nix store แล้วเพิ่มไฟล์
+# upload.ini เข้าไปข้างๆ (PHP โหลดไฟล์ .ini ทุกไฟล์ในโฟลเดอร์ conf.d โดยอัตโนมัติอยู่แล้ว)
+[variables]
+UPLOAD_MAX_FILESIZE = '20M'
+POST_MAX_SIZE = '20M'
+
+[phases.setup]
+cmds = ['UPLOAD_INI_PATH=$(find /nix/store/*-php-*/lib -name php.ini -print0 | tail -z -n 1 | rev | cut -c 9- | rev)/upload.ini; echo "upload_max_filesize=${UPLOAD_MAX_FILESIZE};" >> $UPLOAD_INI_PATH; echo "post_max_size=${POST_MAX_SIZE};" >> $UPLOAD_INI_PATH; echo "memory_limit=256M;" >> $UPLOAD_INI_PATH']
