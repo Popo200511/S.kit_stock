@@ -428,6 +428,11 @@ class Index extends Component
     public function setFormType(string $type): void
     {
         $this->form['type'] = $type;
+
+        // เบิกออกส่วนใหญ่คือย้ายสต็อกไปหน้าร้านของตัวเอง ไม่ใช่ขายให้คู่ค้าภายนอก —
+        // ใส่ชื่อร้านให้อัตโนมัติกันพิมพ์ซ้ำทุกครั้ง ยังแก้เป็นชื่ออื่นได้ตามปกติถ้าเบิกให้คนอื่นจริงๆ
+        $this->form['party'] = $type === 'out' ? config('shop.name') : '';
+
         $this->formLines = [];
         $this->editingLineIndex = null;
         $this->resetLineEntry();
