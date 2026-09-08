@@ -8,18 +8,22 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ---- Design tokens ported from Feed Stock Manager v2.dc.html (:root, lines 17-137) ---- */
+/* accent (โหมดสว่าง) ใช้สีชมพูเดียวกับหน้าร้าน Shop (storefront-app/src/styles.css: --pink/
+--pink-dark) แทนเขียวเดิม — ทุกจุดที่เคยใช้ accent สื่อว่า "ดี/มีของ" (เช่น badge สินค้ามีสต็อก)
+เปลี่ยนเป็นชมพูตามไปด้วยทั้งระบบ ไม่ได้แยกสีตามสถานะ ตามที่ตกลงกันไว้ — โหมดมืดยังเขียวเหมือนเดิม
+(ดู [data-theme='dark'] ด้านล่าง ไม่ได้แตะ) */
 :root {
-    --accent: #0b7a55;
-    --accent-ink: #08603f;
-    --accent-hover: #096a49;
-    --accent-tint: #e9f4ef;
-    --accent-tint2: #dcefe4;
-    --accent-tint3: #cfe8db;
-    --accent-border: #cde2d8;
-    --accent-border2: #c9d3cd;
-    --accent-border3: #b9cfc4;
-    --accent-soft: #f7fbf9;
-    --accent-select: #d3ece0;
+    --accent: #f56f88;
+    --accent-ink: #a8324a;
+    --accent-hover: #e95774;
+    --accent-tint: #fdeef1;
+    --accent-tint2: #fce0e6;
+    --accent-tint3: #f9d0da;
+    --accent-border: #f5c8d3;
+    --accent-border2: #f0b9c7;
+    --accent-border3: #ecabbc;
+    --accent-soft: #fff8f9;
+    --accent-select: #fbd7e0;
     --danger: #b3271b;
     --danger-ink: #a1231a;
     --danger-ink2: #991f15;
