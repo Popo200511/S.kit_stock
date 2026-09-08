@@ -25,7 +25,10 @@ class Index extends Component
 
     public string $view = 'grid';
 
-    public string $sortField = 'name';
+    // เรียงตาม SKU เป็นค่าเริ่มต้น ไม่ใช่ชื่อ — SKU ถูกสร้างตามลำดับที่ import เข้ามาตอนแรก
+    // (เรียงกลุ่มสินค้าตามขนาดเล็ก/กลาง/ใหญ่ไว้แล้วในไฟล์ต้นฉบับ) ในขณะที่เรียงตามชื่อตรงๆ
+    // จะสลับลำดับมั่วเพราะการเรียงคำแบบไทยของ MySQL ไม่รู้จัก "เล็ก/กลาง/ใหญ่" ว่าควรมาก่อนหลังกัน
+    public string $sortField = 'sku';
 
     public string $sortDir = 'asc';
 
