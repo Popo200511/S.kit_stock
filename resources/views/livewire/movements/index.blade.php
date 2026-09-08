@@ -674,33 +674,53 @@
                     <div class="flex flex-col gap-0.5"><span class="text-muted2">ผู้ทำรายการ</span><span class="font-medium">{{ $docMovement->user?->name }}</span></div>
                 </div>
 
-                <div class="flex flex-col">
-                    <div class="grid grid-cols-[2.2fr_.7fr_1fr_1fr] gap-2 py-2 border-b border-text text-[11px] font-semibold tracking-wide text-text2">
-                        <span>รายการ</span><span class="text-right">จำนวน</span><span class="text-right">ราคา/หน่วย</span><span class="text-right">รวม</span>
+                {{-- ตารางจริง (ไม่ใช่ div grid) ตั้งใจ — เอกสารที่มีหลายสิบรายการพิมพ์แล้วจะยาวเกิน
+                1 หน้ากระดาษ ตาราง <thead> จะขึ้นหัวคอลัมน์ซ้ำให้เองทุกหน้าที่พิมพ์ (พฤติกรรม
+                มาตรฐานของเบราว์เซอร์ ใช้ได้เฉพาะ table จริงเท่านั้น) ส่วน .doc-row กัน
+                ไม่ให้แถวสินค้าโดนตัดครึ่งคาบระหว่าง 2 หน้า (ดู @media print ใน app.css) --}}
+                <table class="w-full border-collapse">
+                    <colgroup>
+                        <col style="width:45%"><col style="width:14%"><col style="width:20.5%"><col style="width:20.5%">
+                    </colgroup>
+                    <thead>
+                        <tr class="border-b border-text text-[11px] font-semibold tracking-wide text-text2">
+                            <th class="text-left font-semibold py-2">รายการ</th>
+                            <th class="text-right font-semibold py-2">จำนวน</th>
+                            <th class="text-right font-semibold py-2">ราคา/หน่วย</th>
+                            <th class="text-right font-semibold py-2">รวม</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($docMovement->lines as $l)
+                            <tr class="doc-row border-b border-hairline text-[12.5px]">
+                                <td class="py-2.5 align-baseline">
+                                    <div class="flex flex-col leading-snug">
+                                        <span>{{ $l->product_name }}</span>
+                                        <span class="text-[11px] text-muted2 tabular-nums">{{ $l->product?->sku }}{{ $l->variant ? ' · '.$l->variant->label : '' }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-right tabular-nums py-2.5 align-baseline">{{ $l->qty }} {{ $l->unit }}</td>
+                                <td class="text-right tabular-nums py-2.5 align-baseline">{{ number_format($l->unit_price, 2) }}</td>
+                                <td class="text-right tabular-nums font-medium py-2.5 align-baseline">{{ number_format($l->line_total, 2) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                {{-- ห่อยอดรวม+ลายเซ็นไว้กันคนละหน้ากัน (doc-totals-block เลี่ยงไม่ให้หน้ากระดาษตัดผ่ากลาง
+                ระหว่างยอดรวมกับลายเซ็น — ดู @media print) --}}
+                <div class="doc-totals-block flex flex-col gap-5">
+                    @php $vat = $docMovement->total * 0.07; @endphp
+                    <div class="flex flex-col gap-1.5 items-end">
+                        <div class="flex gap-6 text-[12.5px]"><span class="text-muted">รวมเป็นเงิน</span><span class="tabular-nums min-w-[94px] text-right">{{ number_format($docMovement->total, 2) }}</span></div>
+                        <div class="flex gap-6 text-[12.5px]"><span class="text-muted">ภาษีมูลค่าเพิ่ม 7%</span><span class="tabular-nums min-w-[94px] text-right">{{ number_format($vat, 2) }}</span></div>
+                        <div class="flex gap-6 text-[15px] font-semibold border-t border-text pt-2"><span>ยอดสุทธิ</span><span class="tabular-nums min-w-[94px] text-right">{{ number_format($docMovement->total + $vat, 2) }}</span></div>
                     </div>
-                    @foreach ($docMovement->lines as $l)
-                        <div class="grid grid-cols-[2.2fr_.7fr_1fr_1fr] gap-2 py-2.5 border-b border-hairline text-[12.5px] items-baseline">
-                            <div class="flex flex-col leading-snug">
-                                <span>{{ $l->product_name }}</span>
-                                <span class="text-[11px] text-muted2 tabular-nums">{{ $l->product?->sku }}{{ $l->variant ? ' · '.$l->variant->label : '' }}</span>
-                            </div>
-                            <span class="text-right tabular-nums">{{ $l->qty }} {{ $l->unit }}</span>
-                            <span class="text-right tabular-nums">{{ number_format($l->unit_price, 2) }}</span>
-                            <span class="text-right tabular-nums font-medium">{{ number_format($l->line_total, 2) }}</span>
-                        </div>
-                    @endforeach
-                </div>
 
-                @php $vat = $docMovement->total * 0.07; @endphp
-                <div class="flex flex-col gap-1.5 items-end">
-                    <div class="flex gap-6 text-[12.5px]"><span class="text-muted">รวมเป็นเงิน</span><span class="tabular-nums min-w-[94px] text-right">{{ number_format($docMovement->total, 2) }}</span></div>
-                    <div class="flex gap-6 text-[12.5px]"><span class="text-muted">ภาษีมูลค่าเพิ่ม 7%</span><span class="tabular-nums min-w-[94px] text-right">{{ number_format($vat, 2) }}</span></div>
-                    <div class="flex gap-6 text-[15px] font-semibold border-t border-text pt-2"><span>ยอดสุทธิ</span><span class="tabular-nums min-w-[94px] text-right">{{ number_format($docMovement->total + $vat, 2) }}</span></div>
-                </div>
-
-                <div class="flex justify-between gap-7 mt-2.5 pt-6 text-[11.5px] text-muted2">
-                    <span class="flex-1 border-t border-dotted border-faint pt-1.5 text-center">ผู้ส่งมอบ</span>
-                    <span class="flex-1 border-t border-dotted border-faint pt-1.5 text-center">ผู้รับสินค้า</span>
+                    <div class="flex justify-between gap-7 mt-2.5 pt-6 text-[11.5px] text-muted2">
+                        <span class="flex-1 border-t border-dotted border-faint pt-1.5 text-center">ผู้ส่งมอบ</span>
+                        <span class="flex-1 border-t border-dotted border-faint pt-1.5 text-center">ผู้รับสินค้า</span>
+                    </div>
                 </div>
 
                 <div class="flex gap-2.5 border-t border-line pt-4" data-no-print>
