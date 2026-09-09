@@ -175,8 +175,8 @@ class Index extends Component
         ];
     }
 
-    /** "+12%" / "-8%" vs the previous month, or null when the previous month has nothing to compare against. */
-    protected function pctDelta(float $current, float $previous): ?array
+    /** "+12%" / "-8%" vs the previous period, or null when the previous period has nothing to compare against. */
+    protected function pctDelta(float $current, float $previous, string $suffix = 'จากเดือนก่อน'): ?array
     {
         if ($previous == 0.0) {
             return null;
@@ -184,7 +184,7 @@ class Index extends Component
 
         $pct = round(($current - $previous) / abs($previous) * 100);
 
-        return ['text' => ($pct >= 0 ? '+' : '').$pct.'% จากเดือนก่อน', 'tone' => $pct >= 0 ? 'accent' : 'danger'];
+        return ['text' => ($pct >= 0 ? '+' : '').$pct.'% '.$suffix, 'tone' => $pct >= 0 ? 'accent' : 'danger'];
     }
 
     public function render()
@@ -211,6 +211,28 @@ class Index extends Component
         if ($previous['sales'] > 0 || $previous['profit'] > 0) {
             $pointDiff = round($current['margin'] - $previous['margin']);
             $kpis[3]['delta'] = ['text' => ($pointDiff >= 0 ? '+' : '').$pointDiff.' จุด จากเดือนก่อน', 'tone' => $pointDiff >= 0 ? 'accent' : 'danger'];
+        }
+
+        // สรุปกำไร/ยอดขายรวมทั้งปี — ใช้ monthMetrics() ตัวเดิม (คำนวณได้ทุกช่วงวันที่ ไม่ใช่แค่
+        // รายเดือนตามชื่อ) แค่ส่งช่วง 1 ม.ค. – 31 ธ.ค. ของ $selectedYear เข้าไปแทน ปีก่อนหน้าไว้
+        // เทียบ % เหมือน KPI รายเดือนด้านบน — ใช้ปีปฏิทินเดียวกับตัวเลือกปีของกราฟ "รายปี" อยู่แล้ว
+        $yearStart = Carbon::create($this->selectedYear, 1, 1)->startOfYear();
+        $yearEnd = Carbon::create($this->selectedYear, 12, 31)->endOfYear();
+        $prevYearStart = Carbon::create($this->selectedYear - 1, 1, 1)->startOfYear();
+        $prevYearEnd = Carbon::create($this->selectedYear - 1, 12, 31)->endOfYear();
+
+        $yearMetrics = $this->monthMetrics($yearStart, $yearEnd);
+        $prevYearMetrics = $this->monthMetrics($prevYearStart, $prevYearEnd);
+
+        $yearKpis = [
+            ['label' => 'ยอดเบิกออกรวมทั้งปี', 'value' => number_format($yearMetrics['sales']).' บาท', 'delta' => $this->pctDelta($yearMetrics['sales'], $prevYearMetrics['sales'], 'จากปีก่อน')],
+            ['label' => 'กำไรขั้นต้นรวมทั้งปี', 'value' => number_format($yearMetrics['profit']).' บาท', 'delta' => $this->pctDelta($yearMetrics['profit'], $prevYearMetrics['profit'], 'จากปีก่อน')],
+            ['label' => 'จำนวนเอกสารเบิกออกทั้งปี', 'value' => number_format($yearMetrics['docCount']), 'delta' => $this->pctDelta($yearMetrics['docCount'], $prevYearMetrics['docCount'], 'จากปีก่อน')],
+            ['label' => 'อัตรากำไรเฉลี่ยทั้งปี', 'value' => round($yearMetrics['margin']).'%', 'delta' => null],
+        ];
+        if ($prevYearMetrics['sales'] > 0 || $prevYearMetrics['profit'] > 0) {
+            $pointDiff = round($yearMetrics['margin'] - $prevYearMetrics['margin']);
+            $yearKpis[3]['delta'] = ['text' => ($pointDiff >= 0 ? '+' : '').$pointDiff.' จุด จากปีก่อน', 'tone' => $pointDiff >= 0 ? 'accent' : 'danger'];
         }
 
         $series = $this->monthlyOutSeries();
@@ -265,6 +287,7 @@ class Index extends Component
 
         return view('livewire.reports.index', [
             'kpis' => $kpis,
+            'yearKpis' => $yearKpis,
             'series' => $series,
             'maxOut' => $maxOut,
             'dailySeries' => $dailySeries,
