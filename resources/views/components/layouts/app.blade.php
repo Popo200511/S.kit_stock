@@ -67,6 +67,15 @@
                 </div>
             </div>
 
+            {{-- ออกจากระบบ — ปุ่มเดี่ยวมีขอบของตัวเอง อยู่บนสุด (ใต้โลโก้) แทนที่จะเป็นไอคอนเล็กๆ
+            แอบอยู่ข้างชื่อผู้ใช้ด้านล่างสุดแบบเดิม จะได้เห็นชัด กดง่าย ไม่ต้องมองหา --}}
+            <button @click="logoutOpen = true" title="ออกจากระบบ"
+                class="w-full flex items-center gap-[11px] px-[10px] py-[9px] rounded-[9px] border border-danger-border text-danger text-[13.5px] font-medium hover:bg-danger-tint"
+                :class="railCollapsed ? 'justify-center' : ''">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M12 2v8"></path><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path></svg>
+                <span class="whitespace-nowrap" x-show="!railCollapsed" x-cloak>ออกจากระบบ</span>
+            </button>
+
             <nav class="flex flex-col gap-[18px] overflow-y-auto">
                 @foreach (\App\Support\Nav::groups() as $group)
                     @php
@@ -104,10 +113,6 @@
                     <span class="text-[12.5px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">{{ auth()->user()?->name }}</span>
                     <span class="text-[11px] text-muted2 whitespace-nowrap">{{ auth()->user()?->role->label() }}</span>
                 </div>
-                <button @click="logoutOpen = true" title="ออกจากระบบ"
-                    class="w-[29px] h-[29px] shrink-0 rounded-lg flex items-center justify-center text-muted2 hover:bg-danger-tint hover:text-danger">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path></svg>
-                </button>
             </div>
         </aside>
 

@@ -66,4 +66,14 @@ class SmokeCheckTest extends TestCase
         $user = User::create(['name' => 'Smoke Test', 'email' => 'smoke-test@example.com', 'password' => bcrypt('x'), 'active' => true]);
         $this->actingAs($user)->get('/')->assertRedirect(route($user->landingRoute()));
     }
+
+    public function test_sidebar_has_exactly_one_logout_trigger(): void
+    {
+        $owner = User::where('role', 'owner')->first();
+
+        $html = $this->actingAs($owner)->get(route('dashboard'))->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($html, 'logoutOpen = true'));
+        $this->assertStringContainsString('ออกจากระบบ', $html);
+    }
 }
