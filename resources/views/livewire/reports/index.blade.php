@@ -16,34 +16,6 @@
         @endforeach
     </div>
 
-    {{-- สรุปรายปี — ใช้ปีเดียวกับตัวเลือกปีของกราฟ "รายปี" ด้านล่าง (ปุ่มก่อนหน้า/ถัดไปคือ
-    prevYear()/nextYear() ตัวเดียวกัน) --}}
-    <div class="bg-surface border border-border rounded-[15px] p-4 shadow-sm flex flex-col gap-3.5">
-        <div class="flex items-center justify-between gap-3">
-            <span class="text-[13.5px] font-semibold">สรุปรายปี · ปี {{ $selectedYear + 543 }}</span>
-            <div class="flex items-center gap-1 bg-chip p-[3px] rounded-[9px]">
-                <button wire:click="prevYear" title="ปีก่อนหน้า" class="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-muted2 hover:bg-surface hover:shadow-sm">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
-                </button>
-                <span class="px-1.5 text-xs font-semibold tabular-nums">{{ $selectedYear + 543 }}</span>
-                <button wire:click="nextYear" title="ปีถัดไป" class="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-muted2 hover:bg-surface hover:shadow-sm">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
-                </button>
-            </div>
-        </div>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            @foreach ($yearKpis as $k)
-                <div class="bg-surface2 border border-line rounded-[12px] p-3.5 flex flex-col gap-1.5">
-                    <span class="text-[12px] text-muted font-medium">{{ $k['label'] }}</span>
-                    <span class="text-[17px] font-semibold tracking-tight tabular-nums">{{ $k['value'] }}</span>
-                    @if ($k['delta'])
-                        <span @class(['text-[11px] font-medium whitespace-nowrap', 'text-accent' => $k['delta']['tone'] === 'accent', 'text-danger' => $k['delta']['tone'] === 'danger'])>{{ $k['delta']['text'] }}</span>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-    </div>
-
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {{-- Sales chart: monthly (7 เดือนล่าสุด) หรือ รายวัน (ของเดือนที่เลือก) --}}
         <div class="bg-surface border border-border rounded-[15px] p-4.5 shadow-sm">
