@@ -67,15 +67,6 @@
                 </div>
             </div>
 
-            {{-- ออกจากระบบ — ปุ่มเดี่ยวมีขอบของตัวเอง อยู่บนสุด (ใต้โลโก้) แทนที่จะเป็นไอคอนเล็กๆ
-            แอบอยู่ข้างชื่อผู้ใช้ด้านล่างสุดแบบเดิม จะได้เห็นชัด กดง่าย ไม่ต้องมองหา --}}
-            <button @click="logoutOpen = true" title="ออกจากระบบ"
-                class="w-full flex items-center gap-[11px] px-[10px] py-[9px] rounded-[9px] border border-danger-border text-danger text-[13.5px] font-medium hover:bg-danger-tint"
-                :class="railCollapsed ? 'justify-center' : ''">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M12 2v8"></path><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path></svg>
-                <span class="whitespace-nowrap" x-show="!railCollapsed" x-cloak>ออกจากระบบ</span>
-            </button>
-
             <nav class="flex flex-col gap-[18px] overflow-y-auto">
                 @foreach (\App\Support\Nav::groups() as $group)
                     @php
@@ -105,14 +96,26 @@
                 @endforeach
             </nav>
 
-            <div class="mt-auto border-t border-line pt-[13px] flex items-center gap-[11px]" :class="railCollapsed ? 'justify-center' : ''">
-                <span class="w-[31px] h-[31px] shrink-0 rounded-full bg-accent-tint text-accent flex items-center justify-center text-xs font-semibold">
-                    {{ \Illuminate\Support\Str::of(auth()->user()?->name)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->join('') }}
-                </span>
-                <div class="flex-1 min-w-0 flex flex-col leading-tight overflow-hidden" x-show="!railCollapsed" x-cloak>
-                    <span class="text-[12.5px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">{{ auth()->user()?->name }}</span>
-                    <span class="text-[11px] text-muted2 whitespace-nowrap">{{ auth()->user()?->role->label() }}</span>
+            {{-- ผู้ใช้ปัจจุบัน + ออกจากระบบ — ล่างสุดของ sidebar ทั้งคู่ (ใต้เมนู "ผู้ใช้ / สิทธิ์"
+            ซึ่งเป็นรายการสุดท้ายของ nav ด้านบน) ปุ่มออกจากระบบแยกเป็นแถวของตัวเอง ไม่ได้แชร์แถว
+            กับชื่อผู้ใช้เหมือนเวอร์ชันเดิมก่อนหน้านี้ --}}
+            <div class="mt-auto flex flex-col gap-[11px]">
+                <div class="border-t border-line pt-[13px] flex items-center gap-[11px]" :class="railCollapsed ? 'justify-center' : ''">
+                    <span class="w-[31px] h-[31px] shrink-0 rounded-full bg-accent-tint text-accent flex items-center justify-center text-xs font-semibold">
+                        {{ \Illuminate\Support\Str::of(auth()->user()?->name)->explode(' ')->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->join('') }}
+                    </span>
+                    <div class="flex-1 min-w-0 flex flex-col leading-tight overflow-hidden" x-show="!railCollapsed" x-cloak>
+                        <span class="text-[12.5px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">{{ auth()->user()?->name }}</span>
+                        <span class="text-[11px] text-muted2 whitespace-nowrap">{{ auth()->user()?->role->label() }}</span>
+                    </div>
                 </div>
+
+                <button @click="logoutOpen = true" title="ออกจากระบบ"
+                    class="w-full flex items-center gap-[11px] px-[10px] py-[9px] rounded-[9px] border border-danger-border text-danger text-[13.5px] font-medium hover:bg-danger-tint"
+                    :class="railCollapsed ? 'justify-center' : ''">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M12 2v8"></path><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path></svg>
+                    <span class="whitespace-nowrap" x-show="!railCollapsed" x-cloak>ออกจากระบบ</span>
+                </button>
             </div>
         </aside>
 
