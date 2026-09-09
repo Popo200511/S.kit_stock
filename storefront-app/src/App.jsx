@@ -121,7 +121,7 @@ function App() {
   const [page, setPage] = useState(productRoute ? 'detail' : 'home')
   const [catalogFilter, setCatalogFilter] = useState('ทั้งหมด')
   const [catalogSearch, setCatalogSearch] = useState('')
-  const [catalogSort, setCatalogSort] = useState('name-asc')
+  const catalogSort = 'name-asc'
   const [catalogPage, setCatalogPage] = useState(1)
   const [cartOpen, setCartOpen] = useState(false)
   const [cartCopied, setCartCopied] = useState(false)
@@ -353,7 +353,6 @@ function App() {
           <div className="catalog-toolbar catalog-toolbar-clean">
             <label className="catalog-search-field"><span>ค้นหาสินค้า</span><div className="catalog-search"><Search size={19} /><input value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="ชื่อสินค้า แบรนด์ หรือขนาด..." /></div></label>
             <label className="catalog-category-field"><span>หมวดหมู่สินค้า</span><select value={catalogFilter} onChange={(event) => setCatalogFilter(event.target.value)}>{catalogFilters.map((filter) => <option key={filter} value={filter}>{filter === 'ทั้งหมด' ? 'ทุกหมวดหมู่' : filter}</option>)}</select></label>
-            <label className="catalog-sort"><span>เรียงตาม</span><select value={catalogSort} onChange={(event) => setCatalogSort(event.target.value)}><option value="name-asc">ชื่อ ก–ฮ</option><option value="name-desc">ชื่อ ฮ–ก</option><option value="stock">มีสินค้าก่อน</option><option value="price-asc">ราคาต่ำ–สูง</option><option value="price-desc">ราคาสูง–ต่ำ</option></select></label>
           </div>
           {(catalogFilter !== 'ทั้งหมด' || catalogSearch.trim()) && <div className="catalog-active-filters"><span>กำลังแสดง: {catalogFilter === 'ทั้งหมด' ? 'ทุกหมวดหมู่' : catalogFilter}{catalogSearch.trim() && ` · “${catalogSearch.trim()}”`}</span><button onClick={() => { setCatalogFilter('ทั้งหมด'); setCatalogSearch('') }}><X size={14} />ล้างตัวกรอง</button></div>}
           <div className="catalog-summary"><strong>{sortedProducts.length} รายการ</strong><span>{totalPages > 1 ? `หน้า ${catalogPage} จาก ${totalPages}` : 'สอบถามราคาปลีก–ส่งได้ทุกสินค้า'}</span></div>
