@@ -15,6 +15,24 @@
 .cart-drawer.shop-cart-sheet { position: fixed; z-index: 1601; width: min(470px, 100vw); max-width: 470px; height: 100dvh; gap: 0; animation: none; outline: none; }
 .shop-cart-sheet .cart-items { min-height: 0; }
 .shop-cart-sheet > header, .shop-cart-sheet .cart-summary { flex-shrink: 0; }
+/* Short viewports (including landscape phones): one scroll area prevents
+   the fixed-size header and summary from squeezing product controls away. */
+@media (max-height: 500px) {
+  .cart-drawer.shop-cart-sheet {
+    display: block;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .shop-cart-sheet > header { padding: 12px 20px; }
+  .shop-cart-sheet > header .kicker { display: none; }
+  .shop-cart-sheet > header h2 { font-size: 20px; margin: 0; }
+  .shop-cart-sheet .cart-items { flex: none; overflow: visible; padding: 8px 20px; }
+  .shop-cart-sheet .cart-item-info { min-width: 0; }
+  .shop-cart-sheet .cart-item-info h3 { overflow-wrap: anywhere; }
+  .shop-cart-sheet .cart-summary { padding: 14px 20px; box-shadow: none; }
+  .shop-cart-sheet .cart-empty { height: auto; padding: 24px 12px; }
+}
 @media (prefers-reduced-motion: reduce) {
   [data-slot="sheet-content"], [data-slot="sheet-overlay"], .shop-category-menu { animation: none !important; transition: none !important; }
 }
