@@ -144,8 +144,11 @@
                                 ])>{{ $product->stock_display }} {{ $product->unit?->name }}</span>
                             </div>
                         </div>
-                        <div class="flex gap-1.5 text-[11px] text-muted">
+                        <div class="flex gap-1.5 text-[11px] text-muted flex-wrap">
                             <span class="px-2 py-0.5 rounded-md bg-sunken tabular-nums">ออนไลน์ {{ $product->online_price !== null ? number_format($product->online_price, 0).' บาท' : '—' }}</span>
+                            @if ((float) $product->cost <= 0)
+                                <span class="px-2 py-0.5 rounded-md bg-warn-tint text-warn font-medium">ไม่มีต้นทุน</span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -419,6 +422,15 @@
                 </div>
 
                 <div class="p-5 flex flex-col gap-4">
+                    @can('edit_products')
+                        <div class="flex gap-2.5">
+                            <button wire:click="openEdit({{ $detailProduct->id }})" class="flex-1 py-2.5 rounded-[10px] border border-border4 text-text2 text-[13px] font-medium hover:border-accent hover:text-accent">แก้ไข</button>
+                            <button wire:click="askDelete({{ $detailProduct->id }})" title="ลบสินค้านี้" class="w-11 shrink-0 rounded-[10px] border border-border4 text-muted flex items-center justify-center hover:border-danger hover:bg-danger-tint hover:text-danger">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"></path></svg>
+                            </button>
+                        </div>
+                    @endcan
+
                     <div class="flex flex-col gap-1">
                         <span class="text-[11.5px] text-muted2 tabular-nums">{{ $detailProduct->sku }} · {{ $detailProduct->category?->name }}</span>
                         <span class="text-[19px] font-semibold tracking-tight leading-snug">{{ $detailProduct->name }}</span>
@@ -470,15 +482,6 @@
                             <p class="text-[13px] text-text2 leading-relaxed whitespace-pre-line">{{ $detailProduct->description }}</p>
                         </div>
                     @endif
-
-                    <div class="flex gap-2.5">
-                        @can('edit_products')
-                            <button wire:click="openEdit({{ $detailProduct->id }})" class="flex-1 py-2.5 rounded-[10px] border border-border4 text-text2 text-[13px] font-medium hover:border-accent hover:text-accent">แก้ไข</button>
-                            <button wire:click="askDelete({{ $detailProduct->id }})" title="ลบสินค้านี้" class="w-11 shrink-0 rounded-[10px] border border-border4 text-muted flex items-center justify-center hover:border-danger hover:bg-danger-tint hover:text-danger">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"></path></svg>
-                            </button>
-                        @endcan
-                    </div>
                 </div>
             </div>
         </div>
