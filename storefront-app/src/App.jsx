@@ -308,6 +308,7 @@ function App() {
           </div>
           {!products.length && !loadError && <p className="product-loading-note">กำลังโหลดสินค้า...</p>}
           {loadError && <p className="product-loading-note">โหลดรายการสินค้าไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง</p>}
+          <div className="recommended-actions"><button className="primary-button" onClick={() => openPage('products')}>ดูสินค้าทั้งหมด <ArrowRight size={18} /></button></div>
         </section>
 
         <section className="sales-section" aria-label="บริการจำหน่ายปลีกและส่ง" data-aos="fade-up">

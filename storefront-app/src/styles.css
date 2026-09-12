@@ -534,6 +534,12 @@ h1 span {
 .product-section {
     background: #fff4f5;
 }
+.recommended-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+}
+
 .mini-tabs {
     display: flex;
     gap: 5px;
