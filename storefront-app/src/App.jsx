@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import AOS from 'aos'
+import { CategoryCombobox } from './components/ui/category-combobox'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './components/ui/dropdown-menu'
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription, SheetClose } from './components/ui/sheet'
 
@@ -353,7 +354,7 @@ function App() {
         <section className="catalog-content">
           <div className="catalog-toolbar catalog-toolbar-clean">
             <label className="catalog-search-field"><span>ค้นหาสินค้า</span><div className="catalog-search"><Search size={19} /><input value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="ชื่อสินค้า แบรนด์ หรือขนาด..." /></div></label>
-            <label className="catalog-category-field"><span>หมวดหมู่สินค้า</span><select value={catalogFilter} onChange={(event) => setCatalogFilter(event.target.value)}>{catalogFilters.map((filter) => <option key={filter} value={filter}>{filter === 'ทั้งหมด' ? 'ทุกหมวดหมู่' : filter}</option>)}</select></label>
+            <CategoryCombobox options={catalogFilters} value={catalogFilter} onChange={setCatalogFilter} />
           </div>
           {(catalogFilter !== 'ทั้งหมด' || catalogSearch.trim()) && <div className="catalog-active-filters"><span>กำลังแสดง: {catalogFilter === 'ทั้งหมด' ? 'ทุกหมวดหมู่' : catalogFilter}{catalogSearch.trim() && ` · “${catalogSearch.trim()}”`}</span><button onClick={() => { setCatalogFilter('ทั้งหมด'); setCatalogSearch('') }}><X size={14} />ล้างตัวกรอง</button></div>}
           <div className="catalog-summary"><strong>{sortedProducts.length} รายการ</strong><span>{totalPages > 1 ? `หน้า ${catalogPage} จาก ${totalPages}` : 'สอบถามราคาปลีก–ส่งได้ทุกสินค้า'}</span></div>

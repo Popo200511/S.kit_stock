@@ -534,6 +534,17 @@ h1 span {
 .product-section {
     background: #fff4f5;
 }
+.category-combobox { position: relative; min-width: 0; }
+.category-combobox > label { display: block; margin-bottom: 8px; font-size: 14px; color: #697786; }
+.category-combobox-input { position: relative; }
+.category-combobox-input input { width: 100%; min-width: 0; padding: 14px 40px 14px 16px; border: 1px solid #efd8df; border-radius: 12px; background: #fff; color: #0b2c49; font: inherit; font-size: 16px; }
+.category-combobox-input input:focus { outline: 2px solid #ef547b; outline-offset: 2px; }
+.category-combobox-input > svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.category-combobox-list { position: absolute; z-index: 40; top: 100%; left: 0; right: 0; margin: 8px 0 0; padding: 6px; list-style: none; max-height: 240px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #efd8df; border-radius: 12px; background: #fff; box-shadow: 0 12px 32px #0b2c491a; }
+.category-combobox-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border-radius: 8px; cursor: pointer; overflow-wrap: anywhere; }
+.category-combobox-list li.is-active { background: #fff0f5; color: #c82d58; }
+.category-combobox-list .category-combobox-empty { color: #697786; cursor: default; }
+
 .recommended-actions {
     display: flex;
     justify-content: center;
