@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-3.5" x-data="{ toolsOpen: false }">
 
     {{-- Filter bar --}}
-    <div class="flex flex-wrap gap-2 items-center sticky top-[60px] z-30 bg-bg py-2 -mx-1 px-1">
+    <div class="flex flex-wrap gap-2 items-end sticky top-[60px] z-30 bg-bg py-2 -mx-1 px-1">
         <div class="flex-1 min-w-[190px] flex items-center gap-2 bg-surface border border-border2 rounded-[10px] px-3 py-2 shadow-sm focus-within:border-accent">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="text-muted3" stroke-width="1.9" stroke-linecap="round"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"></path></svg>
             <input type="text" wire:model.live.debounce.400ms="search" placeholder="ค้นหาชื่อสินค้า หรือรหัส SKU"
@@ -9,11 +9,11 @@
         </div>
 
         <div class="w-[170px]">
-            <x-combobox field="categoryFilter" :options="$categoryFilterOptions" placeholder="เลือกประเภท" :live="true" />
+            <x-combobox field="categoryFilter" :options="$categoryFilterOptions" placeholder="เลือกประเภท" label="ประเภท" :live="true" />
         </div>
 
         <div class="w-[150px]">
-            <x-combobox field="statusFilter" :options="$statusFilterOptions" placeholder="เลือกสถานะ" :live="true" />
+            <x-combobox field="statusFilter" :options="$statusFilterOptions" placeholder="เลือกสถานะ" label="สถานะ" :live="true" />
         </div>
 
         <div class="flex gap-1 bg-chip p-[3px] rounded-[9px]">

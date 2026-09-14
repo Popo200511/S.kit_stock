@@ -6,9 +6,10 @@
     'creatable' => false,
     'createMethod' => null,
     'freeText' => false,
+    'label' => null,
 ])
 
-<div class="relative"
+<div class="flex flex-col gap-1"
     x-data="{
         id: Math.random().toString(36).slice(2),
         value: $wire.entangle('{{ $field }}'){{ $live ? '.live' : '' }},
@@ -84,10 +85,21 @@
     "
     @combobox-open.window="if ($event.detail !== id) closeAndRevert()"
     @scroll.window.capture="if (open && ($event.target === document || $event.target === window)) closeAndRevert()">
-    <input type="text" x-ref="input" x-model="search" @focus="openList()"
-        @input="open = true; reposition();"
-        placeholder="{{ $placeholder }}" autocomplete="off"
-        class="w-full border border-border3 rounded-lg px-2.5 py-2 text-[13px] bg-surface focus:border-accent focus:ring-0 focus:outline-none">
+    @if ($label)
+        <label class="text-[11px] font-medium text-muted2">{{ $label }}</label>
+    @endif
+    <div class="relative">
+        <input type="text" x-ref="input" x-model="search" @focus="openList()"
+            @input="open = true; reposition();"
+            placeholder="{{ $placeholder }}" autocomplete="off"
+            class="w-full border border-border3 rounded-lg pl-2.5 pr-8 py-2 text-[13px] bg-surface focus:border-accent focus:ring-0 focus:outline-none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted3 pointer-events-none transition-transform"
+            :class="open ? 'rotate-180' : ''">
+            <path d="M6 9l6 6 6-6"></path>
+        </svg>
+    </div>
 
     <div x-ref="panel" x-show="open" x-cloak
         :style="`top:${posTop}px; left:${posLeft}px; width:${posWidth}px;`"
