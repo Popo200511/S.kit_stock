@@ -187,7 +187,12 @@
                             </span>
                             <x-excel-filter field="name" :options="$columnOptionsMap['name']" :selected="$columnFilters['name'] ?? null" sort-method="setSort" align="left" wire:key="filter-name-{{ $categoryFilter }}-{{ $statusFilter }}" />
                         </th>
-                        @foreach ([['cost','ต้นทุน'],['price','ราคาขาย'],['online_price','ออนไลน์'],['profit','กำไร'],['stock','คงเหลือ']] as [$field, $label])
+                        @php
+                            $priceColumns = auth()->user()->isOwner()
+                                ? [['cost', 'ต้นทุน'], ['price', 'ราคาขาย'], ['online_price', 'ออนไลน์'], ['profit', 'กำไร'], ['stock', 'คงเหลือ']]
+                                : [['price', 'ราคาขาย'], ['online_price', 'ออนไลน์'], ['stock', 'คงเหลือ']];
+                        @endphp
+                        @foreach ($priceColumns as [$field, $label])
                             <th class="text-right px-4 py-2.5 relative">
                                 <span class="inline-flex items-center gap-1">
                                     {{ $label }}
@@ -221,10 +226,14 @@
                                     <span class="text-[11.5px] text-muted2 tabular-nums">{{ $product->sku }} · {{ $product->category?->name }}</span>
                                 </div>
                             </td>
-                            <td class="px-4 py-2.5 text-right text-text4 tabular-nums">{{ number_format($product->cost, 2) }}</td>
+                            @if (auth()->user()->isOwner())
+                                <td class="px-4 py-2.5 text-right text-text4 tabular-nums">{{ number_format($product->cost, 2) }}</td>
+                            @endif
                             <td class="px-4 py-2.5 text-right font-medium tabular-nums">{{ number_format($product->price, 2) }}</td>
                             <td class="px-4 py-2.5 text-right text-text4 tabular-nums">{{ $product->online_price !== null ? number_format($product->online_price, 2) : '—' }}</td>
-                            <td class="px-4 py-2.5 text-right text-accent font-medium tabular-nums">{{ number_format($product->price - $product->cost, 2) }}</td>
+                            @if (auth()->user()->isOwner())
+                                <td class="px-4 py-2.5 text-right text-accent font-medium tabular-nums">{{ number_format($product->price - $product->cost, 2) }}</td>
+                            @endif
                             <td @class([
                                 'px-4 py-2.5 text-right font-semibold tabular-nums',
                                 'text-accent' => $status['tone'] === 'accent',
@@ -449,12 +458,14 @@
                     </div>
 
                     <div class="border border-border rounded-xl overflow-hidden">
-                        <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-hairline2 text-[13px]">
-                            <span class="text-muted">ต้นทุน</span><span class="font-medium tabular-nums">{{ number_format($detailProduct->cost, 2) }} บาท</span>
-                        </div>
-                        <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-hairline2 text-[13px]">
-                            <span class="text-muted">กำไรต่อหน่วย</span><span class="font-medium tabular-nums text-accent">{{ number_format($detailProduct->price - $detailProduct->cost, 2) }} บาท</span>
-                        </div>
+                        @if (auth()->user()->isOwner())
+                            <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-hairline2 text-[13px]">
+                                <span class="text-muted">ต้นทุน</span><span class="font-medium tabular-nums">{{ number_format($detailProduct->cost, 2) }} บาท</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-hairline2 text-[13px]">
+                                <span class="text-muted">กำไรต่อหน่วย</span><span class="font-medium tabular-nums text-accent">{{ number_format($detailProduct->price - $detailProduct->cost, 2) }} บาท</span>
+                            </div>
+                        @endif
                         <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-hairline2 text-[13px]">
                             <span class="text-muted">คงเหลือ</span>
                             <span @class(['font-medium tabular-nums', 'text-accent' => $status['tone']==='accent', 'text-caution' => $status['tone']==='caution', 'text-warn' => $status['tone']==='warn', 'text-danger' => $status['tone']==='danger'])>{{ $detailProduct->stock_display }} {{ $detailProduct->unit?->name }} · {{ $status['label'] }}</span>
